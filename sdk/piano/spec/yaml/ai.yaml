@@ -1,0 +1,1773 @@
+openapi: 3.0.1
+info:
+  title: ai
+  version: 1.5.3
+servers:
+  - url: https://reports-api.piano.io/rest
+tags:
+  - name: Composer report exports
+  - name: VX report exports
+paths:
+  /export/status:
+    get:
+      summary: Get status of report export job
+      description: Returns the status of a given report export job.
+      operationId: GetExportStatus
+      parameters:
+        - name: aid
+          in: query
+          description: The application ID
+          required: true
+          schema:
+            type: string
+        - name: export_id
+          in: query
+          description: The ID of the exported report
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/ReportExportJobInfoResult'
+                  - $ref: '#/components/schemas/GetExportStatusError'
+                  - $ref: '#/components/schemas/GenericErrorResponse'
+      security:
+        - api_token: []
+  /export/download/url:
+    get:
+      summary: Get URL to download report export
+      description: >-
+        Returns a JSON object which contains a link to download the report. The
+        link is temporary and has to be regenerated after 30 minutes.
+      operationId: GetExportDownloadUrl
+      parameters:
+        - name: aid
+          in: query
+          description: The application ID
+          required: true
+          schema:
+            type: string
+        - name: export_id
+          in: query
+          description: Unique export ID
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/DownloadUrlResult'
+                  - $ref: '#/components/schemas/GetExportDownloadUrlError'
+                  - $ref: '#/components/schemas/GenericErrorResponse'
+      security:
+        - api_token: []
+  /export/experience/versions:
+    get:
+      tags:
+        - Composer report exports
+      summary: Get list of experience's versions
+      description: Get list of experience's versions without model
+      operationId: GetExportExperienceVersions
+      parameters:
+        - name: aid
+          in: query
+          description: The application ID
+          required: true
+          schema:
+            type: string
+        - name: exp_id
+          in: query
+          description: The experience ID
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/ApiComposerFlowVersionArrayResult'
+                  - $ref: '#/components/schemas/GetExportExperienceVersionsError'
+                  - $ref: '#/components/schemas/GenericErrorResponse'
+      security:
+        - api_token: []
+  /export/schedule/composer/conversion:
+    post:
+      tags:
+        - Composer report exports
+      summary: Schedule Composer Conversion report export
+      description: >-
+        Schedules a job exporting a given <a
+        href="https://docs.piano.io/api?endpoint=post~2F~2Fexport~2Fschedule~2Fcomposer~2Fconversion">Composer
+        Conversions report</a>.
+      operationId: PostExportScheduleComposerConversion
+      requestBody:
+        content:
+          '*/*':
+            schema:
+              $ref: '#/components/schemas/PostExportScheduleComposerConversionRequest'
+        required: false
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/ReportExportJobInfoResult'
+                  - $ref: >-
+                      #/components/schemas/PostExportScheduleComposerConversionError
+                  - $ref: '#/components/schemas/GenericErrorResponse'
+      security:
+        - api_token: []
+      x-codegen-request-body-name: body
+  /export/schedule/composer/flow:
+    post:
+      tags:
+        - Composer report exports
+      summary: Schedule Composer Flow report export
+      description: >-
+        Schedules a job exporting a given <a
+        href="https://docs.piano.io/composer-flow-report/">Composer Flow
+        report</a>.
+      operationId: PostExportScheduleComposerFlow
+      requestBody:
+        content:
+          '*/*':
+            schema:
+              $ref: '#/components/schemas/PostExportScheduleComposerFlowRequest'
+        required: false
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/ReportExportJobInfoResult'
+                  - $ref: '#/components/schemas/PostExportScheduleComposerFlowError'
+                  - $ref: '#/components/schemas/GenericErrorResponse'
+      security:
+        - api_token: []
+      x-codegen-request-body-name: body
+  /export/schedule/vx/gdpr/user-id:
+    post:
+      tags:
+        - VX report exports
+      summary: Schedule GDPR report export (by user ID)
+      description: Schedules a job exporting a GDPR report for a given user.
+      operationId: PostExportScheduleVxGdprUser-id
+      requestBody:
+        content:
+          '*/*':
+            schema:
+              $ref: '#/components/schemas/PostExportScheduleVxGdprUser-idRequest'
+        required: false
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/ReportExportJobInfoResult'
+                  - $ref: '#/components/schemas/PostExportScheduleVxGdprUser-idError'
+                  - $ref: '#/components/schemas/GenericErrorResponse'
+      security:
+        - api_token: []
+      x-codegen-request-body-name: body
+  /export/schedule/vx/gdpr/browser-id:
+    post:
+      tags:
+        - VX report exports
+      summary: Schedule GDPR report export (by browser ID)
+      description: Schedules a job exporting a GDPR report for a given browser.
+      operationId: PostExportScheduleVxGdprBrowser-id
+      requestBody:
+        content:
+          '*/*':
+            schema:
+              $ref: '#/components/schemas/PostExportScheduleVxGdprBrowser-idRequest'
+        required: false
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/ReportExportJobInfoResult'
+                  - $ref: >-
+                      #/components/schemas/PostExportScheduleVxGdprBrowser-idError
+                  - $ref: '#/components/schemas/GenericErrorResponse'
+      security:
+        - api_token: []
+      x-codegen-request-body-name: body
+  /export/schedule/vx/revenue-recognition:
+    post:
+      tags:
+        - VX report exports
+      summary: Schedule Revenue Recognition report export
+      description: >-
+        Schedules an export job for <a
+        href="https://docs.piano.io/revenue-recognition-report/">the new version
+        of Revenue Recognition report</a>
+      operationId: PostExportScheduleVxRevenue-recognition
+      requestBody:
+        content:
+          '*/*':
+            schema:
+              $ref: >-
+                #/components/schemas/PostExportScheduleVxRevenue-recognitionRequest
+        required: false
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/ReportExportJobInfoResult'
+                  - $ref: >-
+                      #/components/schemas/PostExportScheduleVxRevenue-recognitionError
+                  - $ref: '#/components/schemas/GenericErrorResponse'
+      security:
+        - api_token: []
+      x-codegen-request-body-name: body
+  /export/schedule/vx/passiveChurn:
+    post:
+      tags:
+        - VX report exports
+      summary: Schedule export of Passive churn prevention report export
+      description: >-
+        Schedules a job exporting a given Passive churn prevention report with
+        specified type.
+      operationId: PostExportScheduleVxPassiveChurn
+      requestBody:
+        content:
+          '*/*':
+            schema:
+              $ref: '#/components/schemas/PostExportScheduleVxPassiveChurnRequest'
+        required: false
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/ReportExportJobInfoResult'
+                  - $ref: '#/components/schemas/PostExportScheduleVxPassiveChurnError'
+                  - $ref: '#/components/schemas/GenericErrorResponse'
+      security:
+        - api_token: []
+      x-codegen-request-body-name: body
+  /export/schedule/composer/splitTest:
+    post:
+      tags:
+        - Composer report exports
+      summary: Schedule A/B test report export (legacy)
+      description: >-
+        Schedules an A/B test report export job. A legacy endpoint. We recommend
+        using <a
+        href="https://docs.piano.io/api?endpoint=post~2F~2Fexport~2Fschedule~2Fcomposer~2FabTest">/export/schedule/composer/abTest</a>.
+      operationId: PostExportScheduleComposerSplitTest
+      requestBody:
+        content:
+          '*/*':
+            schema:
+              $ref: '#/components/schemas/PostExportScheduleComposerSplitTestRequest'
+        required: false
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/ReportExportJobInfoResult'
+                  - $ref: >-
+                      #/components/schemas/PostExportScheduleComposerSplitTestError
+                  - $ref: '#/components/schemas/GenericErrorResponse'
+      security:
+        - api_token: []
+      x-codegen-request-body-name: body
+  /export/schedule/composer/abTest:
+    post:
+      tags:
+        - Composer report exports
+      summary: Schedule A/B Test report export (new)
+      description: >-
+        Schedules a job exporting a given <a
+        href="https://docs.piano.io/ab-test-report/">A/B test report</a>.
+      operationId: PostExportScheduleComposerAbTest
+      requestBody:
+        content:
+          '*/*':
+            schema:
+              $ref: '#/components/schemas/PostExportScheduleComposerAbTestRequest'
+        required: false
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/ReportExportJobInfoResult'
+                  - $ref: '#/components/schemas/PostExportScheduleComposerAbTestError'
+                  - $ref: '#/components/schemas/GenericErrorResponse'
+      security:
+        - api_token: []
+      x-codegen-request-body-name: body
+  /export/schedule/vx/aam:
+    post:
+      tags:
+        - VX report exports
+      summary: Schedule AAM report export
+      description: >-
+        Schedules a job exporting an AAM report in CSV format. Unlike <a
+        href="https://docs.piano.io/aam-monthly-summary-report/">the AAM monthly
+        report</a> available in UI, this report allows more options including
+        date range.
+      operationId: PostExportScheduleVxAam
+      requestBody:
+        content:
+          '*/*':
+            schema:
+              $ref: '#/components/schemas/PostExportScheduleVxAamRequest'
+        required: false
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/ReportExportJobInfoResult'
+                  - $ref: '#/components/schemas/PostExportScheduleVxAamError'
+                  - $ref: '#/components/schemas/GenericErrorResponse'
+      security:
+        - api_token: []
+      x-codegen-request-body-name: body
+  /export/schedule/vx/conversion:
+    post:
+      tags:
+        - VX report exports
+      summary: Schedule VX Conversion report export
+      description: >-
+        Schedules a job exporting a given <a
+        href="https://docs.piano.io/vx-conversions-report/">VX Conversion
+        report</a>.
+      operationId: PostExportScheduleVxConversion
+      requestBody:
+        content:
+          '*/*':
+            schema:
+              $ref: '#/components/schemas/PostExportScheduleVxConversionRequest'
+        required: false
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/ReportExportJobInfoResult'
+                  - $ref: '#/components/schemas/PostExportScheduleVxConversionError'
+                  - $ref: '#/components/schemas/GenericErrorResponse'
+      security:
+        - api_token: []
+      x-codegen-request-body-name: body
+  /export/schedule/vx/subscriptionLog:
+    post:
+      tags:
+        - VX report exports
+      summary: Schedule VX Subscription log export
+      description: >-
+        Schedules a job exporting a given <a
+        href="https://docs.piano.io/subscription-log-report/">VX Subscription
+        log</a>.
+      operationId: PostExportScheduleVxSubscriptionLog
+      requestBody:
+        content:
+          '*/*':
+            schema:
+              $ref: '#/components/schemas/PostExportScheduleVxSubscriptionLogRequest'
+        required: false
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/ReportExportJobInfoResult'
+                  - $ref: >-
+                      #/components/schemas/PostExportScheduleVxSubscriptionLogError
+                  - $ref: '#/components/schemas/GenericErrorResponse'
+      security:
+        - api_token: []
+      x-codegen-request-body-name: body
+  /export/schedule/vx/subscription:
+    post:
+      tags:
+        - VX report exports
+      summary: Schedule export of VX Subscription visual report
+      description: >-
+        Schedules a job exporting a given <a
+        href="https://docs.piano.io/vxreports/#vxvisualsubs">VX Subscription
+        visual report</a>.
+      operationId: PostExportScheduleVxSubscription
+      requestBody:
+        content:
+          '*/*':
+            schema:
+              $ref: '#/components/schemas/PostExportScheduleVxSubscriptionRequest'
+        required: false
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/ReportExportJobInfoResult'
+                  - $ref: '#/components/schemas/PostExportScheduleVxSubscriptionError'
+                  - $ref: '#/components/schemas/GenericErrorResponse'
+      security:
+        - api_token: []
+      x-codegen-request-body-name: body
+  /export/schedule/vx/suspicious:
+    post:
+      tags:
+        - VX report exports
+      summary: Schedule Suspicious activity report export
+      description: >-
+        Schedules a job exporting a given <a
+        href="https://docs.piano.io/api?endpoint=post~2F~2Fexport~2Fschedule~2Fvx~2Fsuspicious">Suspicious
+        activity report</a>.
+      operationId: PostExportScheduleVxSuspicious
+      requestBody:
+        content:
+          '*/*':
+            schema:
+              $ref: '#/components/schemas/PostExportScheduleVxSuspiciousRequest'
+        required: false
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/ReportExportJobInfoResult'
+                  - $ref: '#/components/schemas/PostExportScheduleVxSuspiciousError'
+                  - $ref: '#/components/schemas/GenericErrorResponse'
+      security:
+        - api_token: []
+      x-codegen-request-body-name: body
+  /export/schedule/revenue/recognition/transactions:
+    post:
+      tags:
+        - VX report exports
+      summary: Schedule export of Revenue recognition transaction report export
+      description: >-
+        Schedules a job exporting a given Revenue recognition transaction
+        report. Unlike <a
+        href="https://docs.piano.io/latest-revenue-recognition-transaction-list-csv/">the
+        Latest Revenue recognition transaction list</a> available in UI, this
+        report allows more options including date range. 
+      operationId: PostExportScheduleRevenueRecognitionTransactions
+      requestBody:
+        content:
+          '*/*':
+            schema:
+              $ref: >-
+                #/components/schemas/PostExportScheduleRevenueRecognitionTransactionsRequest
+        required: false
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/ReportExportJobInfoResult'
+                  - $ref: >-
+                      #/components/schemas/PostExportScheduleRevenueRecognitionTransactionsError
+                  - $ref: '#/components/schemas/GenericErrorResponse'
+      security:
+        - api_token: []
+      x-codegen-request-body-name: body
+  /export/schedule/revenue/recognition/summary:
+    post:
+      tags:
+        - VX report exports
+      summary: Schedule export of Revenue recognition summary report
+      description: >-
+        Schedules a job exporting a given Revenue recognition summary report.
+        Unlike <a
+        href="https://docs.piano.io/latest-revenue-recognition-summary-csv/">the
+        Latest revenue recognition summary</a> available in UI, this report
+        allows more options including date range.
+      operationId: PostExportScheduleRevenueRecognitionSummary
+      requestBody:
+        content:
+          '*/*':
+            schema:
+              $ref: >-
+                #/components/schemas/PostExportScheduleRevenueRecognitionSummaryRequest
+        required: false
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/ReportExportJobInfoResult'
+                  - $ref: >-
+                      #/components/schemas/PostExportScheduleRevenueRecognitionSummaryError
+                  - $ref: '#/components/schemas/GenericErrorResponse'
+      security:
+        - api_token: []
+      x-codegen-request-body-name: body
+components:
+  schemas:
+    GetExportStatusError:
+      type: object
+      required:
+        - code
+      properties:
+        code:
+          type: integer
+          example: 400, 500
+          description: |+
+            - 400: invalid export_id
+
+            - 500: internal exception
+
+          enum:
+            - 400
+            - 500
+        message:
+          type: string
+        localizedMessage:
+          type: string
+    PostExportScheduleVxPassiveChurnError:
+      type: object
+      required:
+        - code
+      properties:
+        code:
+          type: integer
+          example: 400, 500
+          description: |+
+            - 400: invalid parameters
+
+            - 500: internal exception
+
+          enum:
+            - 400
+            - 500
+        message:
+          type: string
+        localizedMessage:
+          type: string
+    PostExportScheduleVxAamError:
+      type: object
+      required:
+        - code
+      properties:
+        code:
+          type: integer
+          example: 400, 500
+          description: |+
+            - 400: invalid parameters
+
+            - 500: internal exception
+
+          enum:
+            - 400
+            - 500
+        message:
+          type: string
+        localizedMessage:
+          type: string
+    PostExportScheduleVxConversionError:
+      type: object
+      required:
+        - code
+      properties:
+        code:
+          type: integer
+          example: 400, 500
+          description: |+
+            - 400: invalid parameters
+
+            - 500: internal exception
+
+          enum:
+            - 400
+            - 500
+        message:
+          type: string
+        localizedMessage:
+          type: string
+    PostExportScheduleVxRevenue-recognitionError:
+      type: object
+      required:
+        - code
+      properties:
+        code:
+          type: integer
+          example: 400, 500
+          description: |+
+            - 400: invalid parameters
+
+            - 500: internal exception
+
+          enum:
+            - 400
+            - 500
+        message:
+          type: string
+        localizedMessage:
+          type: string
+    PostExportScheduleRevenueRecognitionTransactionsError:
+      type: object
+      required:
+        - code
+      properties:
+        code:
+          type: integer
+          example: 400, 500
+          description: |+
+            - 400: invalid parameters
+
+            - 500: internal exception
+
+          enum:
+            - 400
+            - 500
+        message:
+          type: string
+        localizedMessage:
+          type: string
+    PostExportScheduleComposerConversionError:
+      type: object
+      required:
+        - code
+      properties:
+        code:
+          type: integer
+          example: 400, 500
+          description: |+
+            - 400: invalid parameters
+
+            - 500: internal exception
+
+          enum:
+            - 400
+            - 500
+        message:
+          type: string
+        localizedMessage:
+          type: string
+    PostExportScheduleVxGdprBrowser-idError:
+      type: object
+      required:
+        - code
+      properties:
+        code:
+          type: integer
+          example: 400, 500
+          description: |+
+            - 400: invalid parameters
+
+            - 500: internal exception
+
+          enum:
+            - 400
+            - 500
+        message:
+          type: string
+        localizedMessage:
+          type: string
+    PostExportScheduleVxGdprUser-idError:
+      type: object
+      required:
+        - code
+      properties:
+        code:
+          type: integer
+          example: 400, 500
+          description: |+
+            - 400: invalid parameters
+
+            - 500: internal exception
+
+          enum:
+            - 400
+            - 500
+        message:
+          type: string
+        localizedMessage:
+          type: string
+    PostExportScheduleComposerAbTestError:
+      type: object
+      required:
+        - code
+      properties:
+        code:
+          type: integer
+          example: 400, 500
+          description: |+
+            - 400: invalid parameters
+
+            - 500: internal exception
+
+          enum:
+            - 400
+            - 500
+        message:
+          type: string
+        localizedMessage:
+          type: string
+    PostExportScheduleComposerFlowError:
+      type: object
+      required:
+        - code
+      properties:
+        code:
+          type: integer
+          example: 400, 500
+          description: |+
+            - 400: invalid parameters
+
+            - 500: internal exception
+
+          enum:
+            - 400
+            - 500
+        message:
+          type: string
+        localizedMessage:
+          type: string
+    PostExportScheduleVxSubscriptionLogError:
+      type: object
+      required:
+        - code
+      properties:
+        code:
+          type: integer
+          example: 400, 500
+          description: |+
+            - 400: invalid parameters
+
+            - 500: internal exception
+
+          enum:
+            - 400
+            - 500
+        message:
+          type: string
+        localizedMessage:
+          type: string
+    PostExportScheduleRevenueRecognitionSummaryError:
+      type: object
+      required:
+        - code
+      properties:
+        code:
+          type: integer
+          example: 400, 500
+          description: |+
+            - 400: invalid parameters
+
+            - 500: internal exception
+
+          enum:
+            - 400
+            - 500
+        message:
+          type: string
+        localizedMessage:
+          type: string
+    GetExportDownloadUrlError:
+      type: object
+      required:
+        - code
+      properties:
+        code:
+          type: integer
+          example: 400, 500
+          description: |+
+            - 400: invalid export_id or the job is not finished
+
+            - 500: internal exception
+
+          enum:
+            - 400
+            - 500
+        message:
+          type: string
+        localizedMessage:
+          type: string
+    GetExportExperienceVersionsError:
+      type: object
+      required:
+        - code
+      properties:
+        code:
+          type: integer
+          example: 400, 500
+          description: |+
+            - 400: invalid parameters
+
+            - 500: internal exception
+
+          enum:
+            - 400
+            - 500
+        message:
+          type: string
+        localizedMessage:
+          type: string
+    PostExportScheduleVxSuspiciousError:
+      type: object
+      required:
+        - code
+      properties:
+        code:
+          type: integer
+          example: 400, 500
+          description: |+
+            - 400: invalid parameters
+
+            - 500: internal exception
+
+          enum:
+            - 400
+            - 500
+        message:
+          type: string
+        localizedMessage:
+          type: string
+    PostExportScheduleVxSubscriptionError:
+      type: object
+      required:
+        - code
+      properties:
+        code:
+          type: integer
+          example: 400, 500
+          description: |+
+            - 400: invalid parameters
+
+            - 500: internal exception
+
+          enum:
+            - 400
+            - 500
+        message:
+          type: string
+        localizedMessage:
+          type: string
+    PostExportScheduleComposerSplitTestError:
+      type: object
+      required:
+        - code
+      properties:
+        code:
+          type: integer
+          example: 400, 500
+          description: |+
+            - 400: invalid parameters
+
+            - 500: internal exception
+
+          enum:
+            - 400
+            - 500
+        message:
+          type: string
+        localizedMessage:
+          type: string
+    ReportExportJobInfo:
+      required:
+        - export_id
+        - job_status
+        - report_request
+      type: object
+      properties:
+        attempt:
+          type: integer
+          description: Current or last attempt to process the export
+          format: int32
+          readOnly: true
+          example: 1
+        export_id:
+          type: string
+          description: Unique export ID
+          example: dc760025-6352-40e6-b9fd-75de6b09729b
+        report_request:
+          type: object
+          properties: {}
+          description: The report request params, a JSON string
+          example: '{"aid":"xxx","exp_id":"xxx","file_name":null}'
+        job_status:
+          type: string
+          description: The job status
+          example: CREATED
+          enum:
+            - CREATED
+            - IN_PROGRESS
+            - FINISHED
+            - INTERNAL_ERROR
+            - REPROCESS
+            - REMOVED
+            - DUPLICATE
+        error_text:
+          type: string
+          description: The error message when the Job status is INTERNAL_ERROR
+        percent_complete:
+          type: integer
+          description: The percent complete if applicable
+          format: int32
+          example: 100
+        file_name:
+          type: string
+          description: The name of the exported report file
+          example: report_2023_10_01.csv
+      description: Information about export job
+    ErrorResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          readOnly: true
+        localizedMessage:
+          type: string
+    DownloadUrl:
+      required:
+        - url
+      type: object
+      properties:
+        url:
+          type: string
+          description: 'The download URL '
+      description: The url to download the exported report
+    ApiComposerFlowVersion:
+      required:
+        - aid
+        - exp_id
+        - id
+        - start
+        - version_num
+      type: object
+      properties:
+        id:
+          type: string
+          description: Experience version ID
+        aid:
+          type: string
+          description: The application ID
+        exp_id:
+          type: string
+          description: The experience ID
+        version_num:
+          type: integer
+          description: The experience major version number
+          format: int64
+        minor_version_num:
+          type: integer
+          description: The experience minor version number
+          format: int64
+        sub_version_num:
+          type: integer
+          description: >-
+            3rd part in the report version notation (for legacy versions),
+            derived from the model activity period
+          format: int32
+        start:
+          type: string
+          description: Start date in publisher time zone
+        end:
+          type: string
+          description: The end date in the client's time zone
+        value:
+          type: string
+          description: >-
+            Version number in 'version.minor_version_num[.sub_version_num]'
+            format
+          readOnly: true
+    ReportExportJobInfoResult:
+      required:
+        - ReportExportJobInfo
+      type: object
+      properties:
+        ReportExportJobInfo:
+          $ref: '#/components/schemas/ReportExportJobInfo'
+      additionalProperties: false
+    DownloadUrlResult:
+      required:
+        - DownloadUrl
+      type: object
+      properties:
+        DownloadUrl:
+          $ref: '#/components/schemas/DownloadUrl'
+      additionalProperties: false
+    ApiComposerFlowVersionArrayResult:
+      required:
+        - ApiComposerFlowVersion
+      type: object
+      properties:
+        ApiComposerFlowVersion:
+          type: array
+          items:
+            $ref: '#/components/schemas/ApiComposerFlowVersion'
+      additionalProperties: false
+    PostExportScheduleComposerConversionRequest:
+      required:
+        - aid
+        - exp_id
+      type: object
+      properties:
+        aid:
+          type: string
+          description: The application ID
+        exp_id:
+          type: string
+          description: The experience ID
+        version_num:
+          type: string
+          description: The version number
+        row_limit:
+          type: integer
+          description: >-
+            Maximum row count in the by-page aggregation. Not limited if set to
+            0.
+          format: int32
+          default: 10000
+        grouping:
+          type: string
+          description: >-
+            The <a
+            href="https://docs.piano.io/composer-conversions-report/#compconvgroup">grouping</a>
+            to be generated. If the value is ALL, a ZIP file will be returned, a
+            CSV otherwise.
+          default: ALL
+          enum:
+            - ACTION
+            - SOURCE
+            - CATEGORY
+            - TEMPLATE
+            - DEVICE
+            - LOCATION
+            - TAGS
+            - NO_GROUPING
+            - PAGE
+            - ALL
+        from:
+          type: string
+          description: >-
+            The report start date in the application time zone (yyyy-MM-dd). By
+            default, the date 30 days prior to today is used.
+          format: date
+        to:
+          type: string
+          description: >-
+            The report end date in the application time zone (yyyy-MM-dd).By
+            default, the current date is used.
+          format: date
+        file_name:
+          type: string
+          description: The name of the generated file without an extension
+      additionalProperties: false
+    PostExportScheduleComposerFlowRequest:
+      required:
+        - aid
+        - exp_id
+        - version_num
+      type: object
+      properties:
+        aid:
+          type: string
+          description: The application ID
+        exp_id:
+          type: string
+          description: The experience ID
+        version_num:
+          type: string
+          description: The version number
+        from:
+          type: string
+          description: >-
+            The report start date in the application time zone (yyyy-MM-dd). By
+            default, version's start date is used.
+          format: date
+        to:
+          type: string
+          description: >-
+            The report end date in the application time zone (yyyy-MM-dd).By
+            default, the version's end date is used if the version is old, or
+            today otherwise.
+          format: date
+        file_name:
+          type: string
+          description: The name of the generated file without an extension
+      additionalProperties: false
+    PostExportScheduleVxGdprUser-idRequest:
+      required:
+        - aid
+        - uid
+      type: object
+      properties:
+        aid:
+          type: string
+          description: The application ID
+        uid:
+          type: string
+          description: The user ID
+      additionalProperties: false
+    PostExportScheduleVxGdprBrowser-idRequest:
+      required:
+        - aid
+        - bid
+      type: object
+      properties:
+        aid:
+          type: string
+          description: The application ID
+        bid:
+          type: string
+          description: The browser ID
+      additionalProperties: false
+    PostExportScheduleVxRevenue-recognitionRequest:
+      required:
+        - aid
+        - date_interval
+        - export_format
+        - from
+        - to
+      type: object
+      properties:
+        aid:
+          type: string
+          description: The application ID
+        date_interval:
+          type: string
+          description: 'Report Interval, allowable values: [DAY, WEEK, MONTH, YEAR, CUSTOM]'
+          default: MONTH
+          enum:
+            - DAY
+            - WEEK
+            - MONTH
+            - YEAR
+            - CUSTOM
+        export_format:
+          type: string
+          description: export file format
+          default: CSV
+          enum:
+            - CSV
+            - JSON
+        currency_code:
+          type: string
+          description: The currency (codes under ISO 4217)
+        include_tax:
+          type: boolean
+          description: Include tax in revenue (default true)
+          default: false
+        separate_tax:
+          type: boolean
+          description: Tax as separate column (default false)
+          default: true
+        gift_transactions:
+          type: boolean
+          description: Include gift transactions (default true)
+          default: true
+        term_id:
+          type: string
+          description: The public term ID to filter by
+        term_type:
+          type: string
+          description: The term type to filter by
+          enum:
+            - PAYMENT
+            - REGISTRATION
+            - EXTERNAL
+            - GIFT
+        subscription_id:
+          type: string
+          description: The subscription ID
+        grace_periods_enabled:
+          type: boolean
+          description: >-
+            If this parameter is to false, accrual transaction types will not
+            appear
+          default: true
+        legacy_mode_prior_to:
+          type: string
+          format: date
+        separate_adjustments:
+          type: boolean
+          description: >-
+            When this parameter is set to true, the report will separate
+            revenues recognized previously up to the day of an adjustment
+            (including refund and subscription exiting grace period without
+            payment) and revenue to be recognized for both standard and accrual
+            transaction types
+          default: false
+        from:
+          type: string
+          description: The report start date in the application time zone (yyyy-MM-dd)
+          format: date
+        to:
+          type: string
+          description: The report end date in the application time zone (yyyy-MM-dd)
+          format: date
+        file_name:
+          type: string
+          description: The name of the generated file without an extension
+      additionalProperties: false
+    PostExportScheduleVxPassiveChurnRequest:
+      required:
+        - aid
+        - report_type
+      type: object
+      properties:
+        aid:
+          type: string
+          description: The application ID
+        currency:
+          type: string
+          description: The Conversion report currency
+        report_type:
+          type: string
+          description: Comma-separated list of KPI, LOGIC, DETAILED
+          format: multi
+        term_type:
+          type: string
+          description: Comma-separated list of The term type to filter by [Payment]
+          format: multi
+        term_id:
+          type: string
+          description: Comma-separated list of The public term ID to filter by
+          format: multi
+        resource_id:
+          type: string
+          description: Comma-separated list of Resource name to filter by
+          format: multi
+        payment_provider:
+          type: string
+          description: Comma-separated list of Payment provider ID to filter by
+          format: multi
+        payment_method:
+          type: string
+          description: Comma-separated list of Payment method name to filter by
+          format: multi
+        decline_reason:
+          type: string
+          description: Comma-separated list of Decline reason to filter by
+          format: multi
+        from:
+          type: string
+          description: >-
+            The report start date in the application time zone (yyyy-MM-dd). By
+            default, version's start date is used.
+          format: date
+        to:
+          type: string
+          description: >-
+            The report end date in the application time zone (yyyy-MM-dd).By
+            default, the version's end date is used if the version is old, or
+            today otherwise.
+          format: date
+        file_name:
+          type: string
+          description: The name of the generated file without an extension
+      additionalProperties: false
+    PostExportScheduleComposerSplitTestRequest:
+      required:
+        - aid
+        - exp_id
+      type: object
+      properties:
+        aid:
+          type: string
+          description: The application ID
+        exp_id:
+          type: string
+          description: The experience ID
+        file_name:
+          type: string
+          description: The name of the generated file without an extension
+      additionalProperties: false
+    PostExportScheduleComposerAbTestRequest:
+      required:
+        - aid
+        - exp_id
+      type: object
+      properties:
+        aid:
+          type: string
+          description: The application ID
+        exp_id:
+          type: string
+          description: The experience ID
+        file_name:
+          type: string
+          description: The name of the generated file without an extension
+      additionalProperties: false
+    PostExportScheduleVxAamRequest:
+      required:
+        - aid
+        - from
+        - interval
+        - to
+      type: object
+      properties:
+        aid:
+          type: string
+          description: The application ID
+        interval:
+          type: string
+          description: Report Interval [DAILY, MONTHLY]
+          enum:
+            - DAILY
+            - MONTHLY
+        from:
+          type: string
+          description: The report start date in the application time zone (yyyy-MM-dd)
+          format: date
+        to:
+          type: string
+          description: The report end date in the application time zone (yyyy-MM-dd)
+          format: date
+        file_name:
+          type: string
+          description: The name of the generated file without an extension
+      additionalProperties: false
+    PostExportScheduleVxConversionRequest:
+      required:
+        - aid
+      type: object
+      properties:
+        aid:
+          type: string
+          description: The application ID
+        row_limit:
+          type: integer
+          description: >-
+            Maximum row count in the by-page aggregation. Not limited if set to
+            0.
+          format: int32
+          default: 500
+        offer_id:
+          type: string
+          description: The offer ID
+        term_id:
+          type: string
+          description: The public term ID to filter by
+        currency:
+          type: string
+          description: The term currency
+        term_type:
+          type: string
+          description: Comma-separated list of The term type to filter by
+          format: multi
+        checkout_flow_id:
+          type: string
+          description: The public checkout ID
+        from:
+          type: string
+          description: >-
+            The report start date in the application time zone (yyyy-MM-dd). By
+            default, the date 30 days prior to today is used.
+          format: date
+        to:
+          type: string
+          description: >-
+            The report end date in the application time zone (yyyy-MM-dd).By
+            default, the current date is used.
+          format: date
+        file_name:
+          type: string
+          description: The name of the generated file without an extension
+      additionalProperties: false
+    PostExportScheduleVxSubscriptionLogRequest:
+      required:
+        - aid
+      type: object
+      properties:
+        aid:
+          type: string
+          description: The application ID
+        keyword:
+          type: string
+          description: >-
+            A keyword to search in any part of the data, or a full subscription
+            ID
+        subscription_status:
+          type: string
+          description: >-
+            Comma-separated list of The subscription status (ACTIVE, UPGRADED,
+            WONT_RENEW, CANCELED, PAYMENT_FAILED, EXPIRED)
+          format: multi
+        upgrade_status:
+          type: string
+          description: >-
+            Comma-separated list of The upgrade status (SCHEDULED, COMPLETED,
+            FAILED, NO_UPGRADE)
+          format: multi
+        created_via_upgrade:
+          type: boolean
+          description: Finds subscriptions created via upgrade
+        trial_status:
+          type: string
+          description: >-
+            Comma-separated list of The trial status (CURRENTLY_IN,
+            ENDED_CONVERTED, ENDED_NOT_CONVERTED, NO_TRIAL)
+          format: multi
+        trial_end_from:
+          type: string
+          description: The "from" date for the trial end date range
+          format: date
+        trial_end_to:
+          type: string
+          description: The "to" date for the trial end date range
+          format: date
+        renewed:
+          type: boolean
+          description: Finds renewed subscriptions
+        auto_renew:
+          type: boolean
+          description: Finds subscriptions with auto renewal
+        auto_renew_disablement_date_from:
+          type: string
+          description: The "from" date for the date range of auto renewal disabled
+          format: date
+        auto_renew_disablement_date_to:
+          type: string
+          description: The "to" date for the date range of auto renewal disabled
+          format: date
+        start_date_from:
+          type: string
+          description: The "from" date for the start date range
+          format: date
+        start_date_to:
+          type: string
+          description: The "to" date for the start date range
+          format: date
+        end_date_from:
+          type: string
+          description: The "from" date for the end date range
+          format: date
+        end_date_to:
+          type: string
+          description: The "to" date for the end date range
+          format: date
+        last_billing_date_from:
+          type: string
+          description: The "from" date for the last billing date range
+          format: date
+        last_billing_date_to:
+          type: string
+          description: The "to" date for the last billing date range
+          format: date
+        next_billing_date_from:
+          type: string
+          description: The "from" date for the next billing date range
+          format: date
+        next_billing_date_to:
+          type: string
+          description: The "to" date for the next billing date range
+          format: date
+        currently_in_grace_period:
+          type: boolean
+          description: Finds subscriptions currently in grace period
+        currency:
+          type: string
+          description: The currency (codes under ISO 4217)
+        trial_price_from:
+          type: number
+          description: The minimum value of trial price
+        trial_price_to:
+          type: number
+          description: The maximum value of trial price
+        charge_count:
+          type: integer
+          description: The exact number of charges
+        regular_price_from:
+          type: number
+          description: The minimum value of regular price
+        regular_price_to:
+          type: number
+          description: The maximum value of regular price
+        days_subscribed_from:
+          type: integer
+          description: The minimum number of days subscribed
+        days_subscribed_to:
+          type: integer
+          description: The maximum number of days subscribed
+        resource_id:
+          type: string
+          description: Comma-separated list of Resource name to filter by
+          format: multi
+        term_id:
+          type: string
+          description: Comma-separated list of The public term ID to filter by
+          format: multi
+        term_type:
+          type: string
+          description: Comma-separated list of The term type to filter by
+          format: multi
+        file_name:
+          type: string
+          description: The name of the generated file without an extension
+        ln:
+          type: string
+          description: Export locale format
+      additionalProperties: false
+    PostExportScheduleVxSubscriptionRequest:
+      required:
+        - aid
+        - from
+        - interval
+        - to
+      type: object
+      properties:
+        aid:
+          type: string
+          description: The application ID
+        interval:
+          type: string
+          description: >-
+            The interval of the report, allowableValues = DAY, WEEK, MONTH,
+            QUARTER
+          enum:
+            - DAY
+            - WEEK
+            - MONTH
+            - QUARTER
+        from:
+          type: string
+          description: The report start date in the application time zone (yyyy-MM-dd)
+          format: date
+        to:
+          type: string
+          description: The report end date in the application time zone (yyyy-MM-dd)
+          format: date
+        file_name:
+          type: string
+          description: The name of the generated file without an extension
+      additionalProperties: false
+    PostExportScheduleVxSuspiciousRequest:
+      required:
+        - aid
+      type: object
+      properties:
+        aid:
+          type: string
+          description: The application ID
+        date:
+          type: string
+          description: The report date in the application time zone (yyyy-MM-dd)
+          format: date
+        termId:
+          type: string
+          description: Comma-separated list of The public term ID to filter by
+          format: multi
+        termType:
+          type: string
+          description: >-
+            Comma-separated list of The term type to filter by [Payment,
+            Registration, Custom, External, Gift]
+          format: multi
+        userType:
+          type: string
+          description: >-
+            Comma-separated list of Suspicion category [SUSPICIOUS, ACCEPTABLE,
+            GREAT]
+          format: multi
+        file_name:
+          type: string
+          description: The name of the generated file without an extension
+      additionalProperties: false
+    PostExportScheduleRevenueRecognitionTransactionsRequest:
+      required:
+        - aid
+        - date_interval
+        - export_format
+        - from
+        - to
+      type: object
+      properties:
+        aid:
+          type: string
+          description: The application ID
+        date_interval:
+          type: string
+          description: 'Report Interval, allowable values: [DAY, WEEK, MONTH, YEAR, CUSTOM]'
+          default: MONTH
+          enum:
+            - DAY
+            - WEEK
+            - MONTH
+            - YEAR
+            - CUSTOM
+        export_format:
+          type: string
+          description: export file format
+          default: CSV
+          enum:
+            - CSV
+            - JSON
+        currency_code:
+          type: string
+          description: The currency (codes under ISO 4217)
+        include_tax:
+          type: boolean
+          description: Include tax in revenue (default true)
+          default: true
+        separate_tax:
+          type: boolean
+          description: Tax as separate column (default false)
+          default: false
+        gift_transactions:
+          type: boolean
+          description: Include gift transactions (default true)
+          default: true
+        term_id:
+          type: string
+          description: The public term ID to filter by
+        term_type:
+          type: string
+          description: The term type to filter by
+          enum:
+            - PAYMENT
+            - REGISTRATION
+            - EXTERNAL
+            - GIFT
+        from:
+          type: string
+          description: The report start date in the application time zone (yyyy-MM-dd)
+          format: date
+        to:
+          type: string
+          description: The report end date in the application time zone (yyyy-MM-dd)
+          format: date
+        file_name:
+          type: string
+          description: The name of the generated file without an extension
+      additionalProperties: false
+    PostExportScheduleRevenueRecognitionSummaryRequest:
+      required:
+        - aid
+        - date_interval
+        - export_format
+        - from
+        - to
+      type: object
+      properties:
+        aid:
+          type: string
+          description: The application ID
+        date_interval:
+          type: string
+          description: 'Report Interval, allowable values: [DAY, WEEK, MONTH, YEAR, CUSTOM]'
+          default: MONTH
+          enum:
+            - DAY
+            - WEEK
+            - MONTH
+            - YEAR
+            - CUSTOM
+        export_format:
+          type: string
+          description: export file format
+          default: CSV
+          enum:
+            - CSV
+            - JSON
+        currency_code:
+          type: string
+          description: The currency (codes under ISO 4217)
+        include_tax:
+          type: boolean
+          description: Include tax in revenue (default true)
+          default: true
+        separate_tax:
+          type: boolean
+          description: Tax as separate column (default false)
+          default: false
+        gift_transactions:
+          type: boolean
+          description: Include gift transactions (default true)
+          default: true
+        term_id:
+          type: string
+          description: The public term ID to filter by
+        term_type:
+          type: string
+          description: The term type to filter by
+          enum:
+            - PAYMENT
+            - REGISTRATION
+            - EXTERNAL
+            - GIFT
+        from:
+          type: string
+          description: The report start date in the application time zone (yyyy-MM-dd)
+          format: date
+        to:
+          type: string
+          description: The report end date in the application time zone (yyyy-MM-dd)
+          format: date
+        file_name:
+          type: string
+          description: The name of the generated file without an extension
+      additionalProperties: false
+    GenericErrorResponse:
+      required:
+        - code
+        - message
+      type: object
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+      additionalProperties: false
+    GenericResponse:
+      required:
+        - code
+        - message
+      type: object
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+      additionalProperties: true
+  securitySchemes:
+    api_token:
+      type: apiKey
+      description: Authorization token
+      name: api_token
+      in: query
+x-original-swagger-version: '2.0'

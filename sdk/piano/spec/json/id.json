@@ -1,0 +1,2485 @@
+{
+  "openapi" : "3.0.1",
+  "info" : {
+    "title" : "id",
+    "version" : "SNAPSHOT"
+  },
+  "servers" : [
+    {
+      "url" : "/id/api/v1"
+    }
+  ],
+  "tags" : [
+    {
+      "name" : "Background"
+    },
+    {
+      "name" : "Identity"
+    },
+    {
+      "name" : "IdentityOauth"
+    },
+    {
+      "name" : "PublisherIdentity"
+    },
+    {
+      "name" : "Publisher"
+    }
+  ],
+  "paths" : {
+    "/identity/oauth/token" : {
+      "post" : {
+        "tags" : [
+          "IdentityOauth"
+        ],
+        "summary" : "Get access token by OAuth code or refresh token (PKCE)",
+        "description" : "Returns an access token in response to an OAuth code or a refresh token as part of the <a href = \\\"https://docs.piano.io/oauth-integration/#PKCE\\\">PKCE</a> procedure. Relevant for users without social login.",
+        "operationId" : "PostIdentityOauthToken",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/OAuthRequest"
+              }
+            }
+          },
+          "required" : false,
+          "x-tinypass-file-body" : false
+        },
+        "responses" : {
+          "200" : {
+            "description" : "successful operation",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "oneOf" : [
+                    {
+                      "$ref" : "#/components/schemas/TokenResponseResult"
+                    },
+                    {
+                      "$ref" : "#/components/schemas/GenericErrorResponse"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "x-codegen-request-body-name" : "body"
+      }
+    },
+    "/identity/token/validation" : {
+      "get" : {
+        "tags" : [
+          "IdentityToken"
+        ],
+        "summary" : "Validate access token",
+        "description" : "Returns a JSON with an access token or an error. The availability of other response parameters may change depending on the use case. The received access token can be updated on the server side (with \"Extend expired access\" or SSO).\n\nExamples:\n\ncurl:\ncurl --location --request GET 'https://api.piano.io/id/api/v1/identity/token/validation?client_id={aid} \n--header 'Authorization: {token}\n\n",
+        "operationId" : "GetIdentityTokenValidation",
+        "parameters" : [
+          {
+            "name" : "client_id",
+            "in" : "query",
+            "description" : "Application aid",
+            "required" : true,
+            "schema" : {
+              "type" : "string"
+            }
+          },
+          {
+            "name" : "user_agent",
+            "in" : "query",
+            "description" : "User agent",
+            "schema" : {
+              "type" : "string"
+            }
+          }
+        ],
+        "responses" : {
+          "200" : {
+            "description" : "successful operation",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "oneOf" : [
+                    {
+                      "$ref" : "#/components/schemas/TokenResponseResult"
+                    },
+                    {
+                      "$ref" : "#/components/schemas/GenericErrorResponse"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/publisher/audit/user" : {
+      "get" : {
+        "tags" : [
+          "PublisherAudit"
+        ],
+        "summary" : "Get user audit",
+        "description" : "Retrieves a log of Piano ID events per user.\n\nExamples:\n\naction_type: CREATED, REGISTERED, LOGGED_IN, UPDATED, PASSWORD_CHANGED, EMAIL_CHANGED, PASSWORD_RESET, DELETED, EXPORTED\nfrom and until format: \"2020-31-12 23:59:59\"",
+        "operationId" : "GetPublisherAuditUser",
+        "parameters" : [
+          {
+            "name" : "aid",
+            "in" : "query",
+            "schema" : {
+              "type" : "string"
+            }
+          },
+          {
+            "name" : "uid",
+            "in" : "query",
+            "schema" : {
+              "type" : "string"
+            }
+          },
+          {
+            "name" : "action_type",
+            "in" : "query",
+            "schema" : {
+              "type" : "string"
+            }
+          },
+          {
+            "name" : "from",
+            "in" : "query",
+            "schema" : {
+              "type" : "string"
+            }
+          },
+          {
+            "name" : "until",
+            "in" : "query",
+            "schema" : {
+              "type" : "string"
+            }
+          },
+          {
+            "name" : "limit",
+            "in" : "query",
+            "schema" : {
+              "type" : "integer",
+              "format" : "int32"
+            }
+          },
+          {
+            "name" : "offset",
+            "in" : "query",
+            "schema" : {
+              "type" : "integer",
+              "format" : "int32"
+            }
+          },
+          {
+            "name" : "api_token",
+            "in" : "query",
+            "schema" : {
+              "type" : "string"
+            }
+          }
+        ],
+        "responses" : {
+          "200" : {
+            "description" : "Success|OK",
+            "content" : {
+              
+            }
+          }
+        }
+      }
+    },
+    "/publisher/customField" : {
+      "post" : {
+        "tags" : [
+          "Publisher"
+        ],
+        "summary" : "Create or update custom field key(s)",
+        "description" : "Creates or updates the key of one or more custom field.[\n    {\n        \"field_name\": \"TESTAPI\",\n        \"data_type\": \"TEXT\",\n        \"title\": \"TESTAPI\",\n        \"required_by_default\": false,\n        \"editable\": true,\n        \"validators\": [],\n        \"options\": [],\n        \"attribute\": {\n           \"default_value\": \"123\"\n        }\n    }\n]",
+        "operationId" : "PostPublisherCustomField",
+        "parameters" : [
+          {
+            "name" : "aid",
+            "in" : "query",
+            "description" : "Application aid",
+            "required" : true,
+            "schema" : {
+              "type" : "string"
+            }
+          },
+          {
+            "name" : "global_validation",
+            "in" : "query",
+            "description" : "Validate field name (Field ID) on GM level",
+            "schema" : {
+              "type" : "boolean"
+            }
+          }
+        ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "type" : "array",
+                "items" : {
+                  "$ref" : "#/components/schemas/CustomFieldDefinitionDto"
+                }
+              }
+            }
+          },
+          "required" : false,
+          "x-tinypass-file-body" : false
+        },
+        "responses" : {
+          "200" : {
+            "description" : "Success|OK",
+            "content" : {
+              
+            }
+          }
+        },
+        "x-codegen-request-body-name" : "body"
+      }
+    },
+    "/publisher/form" : {
+      "post" : {
+        "tags" : [
+          "Publisher"
+        ],
+        "summary" : "Create or update custom field value(s)",
+        "description" : "Creates or updates the values of one or more custom field.\n\nExamples:\n\ncurl:\ncurl --location --request POST 'https://api.piano.io/id/api/v1/publisher/form?aid=Rxlq42hiIL&api_token=token&uid=PNI3gq9geqdv575&custom_fields=%7b%2241ef2fwe%22:%22curl%22%7d'\n\njava:\nOkHttpClient client = new OkHttpClient().newBuilder().build();\nRequest request = new Request.Builder()\n.url(\"https://api.piano.io/id/api/v1/publisher/form?aid=Rxlq42hiIL&api_token=token&uid=PNI3gq9geqdv575&custom_fields=%7b\\\"41ef2fwe\\\":\\\"testJava\\\"%7d\")\n.method(\"POST\", RequestBody.create(null, new byte[]{}))\n.build();\nokhttp3.Response response = client.newCall(request).execute();\n\npython:\nimport requests\nurl = \"https://api.piano.io/id/api/v1/publisher/form?aid=Rxlq42hiIL&api_token=token&uid=PNI3gq9geqdv575&custom_fields=%7b\\\"41ef2fwe\\\":\\\"Python\\\"%7d\"\nresponse = requests.request(\"POST\", url)\nprint(response.text)",
+        "operationId" : "PostPublisherForm",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/PostPublisherFormRequest"
+              }
+            }
+          },
+          "required" : false
+        },
+        "responses" : {
+          "200" : {
+            "description" : "Success|OK",
+            "content" : {
+              
+            }
+          }
+        },
+        "x-codegen-request-body-name" : "body"
+      }
+    },
+    "/publisher/form/jwt" : {
+      "post" : {
+        "tags" : [
+          "PublisherForm"
+        ],
+        "summary" : "Update custom form values (JWT)",
+        "description" : "Submits the values of one or more custom field using the JWT format.\n\nExamples:\n\ncurl:\ncurl --location --request POST 'https://api.piano.io/id/api/v1/publisher/form/jwt?aid=Rxlq42hiIL&uid=PNI3gq9geqdv575&custom_fields=%7b%2241ef2fwe%22:%22curl%22%7d' --header 'Authorization: {{access_token}}'\n\njava:\nOkHttpClient client = new OkHttpClient().newBuilder().build();\nRequest request = new Request.Builder()\n.url(\"https://api.piano.io/id/api/v1/publisher/form/jwt?aid=Rxlq42hiIL&uid=PNI3gq9geqdv575&custom_fields=%7b\\\"41ef2fwe\\\":\\\"testJava\\\"%7d\")\n.method(\"POST\", RequestBody.create(null, new byte[]{}))\n.addHeader(\"Authorization\", \"{{access_token}}\")\n.build();\nokhttp3.Response response = client.newCall(request).execute();\n\npython:\nimport requests\nurl = \"https://api.piano.io/id/api/v1/publisher/form/jwt?aid=Rxlq42hiIL&uid=PNI3gq9geqdv575&custom_fields=%7b\\\"41ef2fwe\\\":\\\"Python\\\"%7d\"\nheaders = {\"Authorization\": \"{{access_token}}\"}response = requests.request(\"POST\", url)\nprint(response.text)",
+        "operationId" : "PostPublisherFormJwt",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/PostPublisherFormJwtRequest"
+              }
+            }
+          },
+          "required" : false
+        },
+        "responses" : {
+          "200" : {
+            "description" : "Success|OK",
+            "content" : {
+              
+            }
+          }
+        },
+        "x-codegen-request-body-name" : "body"
+      }
+    },
+    "/publisher/identity/doi/status" : {
+      "post" : {
+        "tags" : [
+          "PublisherIdentityDoi"
+        ],
+        "summary" : "Set user email state to CONFIRMED or PRE-CONFIRMED",
+        "description" : "Set user email state to CONFIRMED or PRE-CONFIRMED.\nExamples:\ncurl:\ncurl --location 'https://{{domain}}/id/api/v1/publisher/identity/doi/status?aid=string&uid=string&email_confirmation_state=[CONFIRMED|PRE_CONFIRMED]' \n--header 'Authorization: {{api_token}}' \n--header 'Content-Type: application/json' \nRequired request parameters: aid, uid, email_confirmation_state\n",
+        "operationId" : "PostPublisherIdentityDoiStatus",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/PostPublisherIdentityDoiStatusRequest"
+              }
+            }
+          },
+          "required" : false
+        },
+        "responses" : {
+          "200" : {
+            "description" : "Success|OK",
+            "content" : {
+              
+            }
+          }
+        },
+        "x-codegen-request-body-name" : "body"
+      }
+    },
+    "/publisher/identity/login" : {
+      "post" : {
+        "tags" : [
+          "PublisherIdentity"
+        ],
+        "summary" : "Log in user by password",
+        "description" : "Logs in a given user. In response to the user's login and password, Piano returns an access token or sends a magic link to the user's mail.\n\nNote: In case of alias login feature email field should contain alias value;\n\nExamples:\n\ncurl:\ncurl --location 'https://{{domain}}/id/api/v1/publisher/identity/login' \n--header 'Authorization: {{api_token}}' \n--header 'Content-Type: application/json' \n--data-raw '{\n    \"aid\": \"{{aid}}\",\n    \"email\": \"aa@aa.com\",\n    \"password\": \"Passw0rd\",\n    \"stay_logged_in\": \"true\",\n    \"alias_name\": \"National ID\"}'",
+        "operationId" : "PostPublisherIdentityLogin",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/PublisherLoginRequest"
+              }
+            }
+          },
+          "required" : false,
+          "x-tinypass-file-body" : false
+        },
+        "responses" : {
+          "200" : {
+            "description" : "successful operation",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "oneOf" : [
+                    {
+                      "$ref" : "#/components/schemas/TokenResponseResult"
+                    },
+                    {
+                      "$ref" : "#/components/schemas/PostPublisherIdentityLoginError"
+                    },
+                    {
+                      "$ref" : "#/components/schemas/GenericErrorResponse"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "x-codegen-request-body-name" : "body"
+      }
+    },
+    "/publisher/identity/password" : {
+      "post" : {
+        "tags" : [
+          "PublisherIdentity"
+        ],
+        "summary" : "Create/update password for existing user",
+        "description" : "Creates or updates a user's password. When 'force_update: true', the current_password value is ignored and may be empty.\n\nRequest body:\n{\n  \"aid\": \"string\",\n  \"uid\": \"string\",\n  \"password\": \"string\",\n  \"current_password\": \"string\",\n  \"force_update\": boolean\n}\nRequired body parameters: aid, uid, password",
+        "operationId" : "PostPublisherIdentityPassword",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/PublisherPasswordRequest"
+              }
+            }
+          },
+          "required" : false,
+          "x-tinypass-file-body" : false
+        },
+        "responses" : {
+          "200" : {
+            "description" : "Success|OK",
+            "content" : {
+              
+            }
+          }
+        },
+        "x-codegen-request-body-name" : "body"
+      }
+    },
+    "/publisher/identity/register" : {
+      "post" : {
+        "tags" : [
+          "PublisherIdentity"
+        ],
+        "summary" : "Register user",
+        "description" : "Registers a given user with Piano ID. Multiple parameters can be defined. The response contains an access token.\nExamples:\n\ncurl:\ncurl --location 'https://{{domain}}/id/api/v1/publisher/identity/register' \n--header 'Authorization: {{api_token}}' \n--header 'Content-Type: application/json' \n--data-raw '{\n  \"aid\": \"string\",\n  \"email\": \"string\",\n  \"first_name\": \"string\",\n  \"last_name\": \"string\",\n  \"password\": \"string\",\n  \"consents\": \"{\\\\\"fieldId1\\\\\":true, \\\\\"fieldId2\\\\\":false}\",\n  \"custom_fields\": \"{\\\\\"text_custom_field_name1\\\\\":\\\\\"text_value\\\\\", \\\\\"single_list_cf_name2\\\\\":\\\\\"[\\\\\\\\\\\\\"Option1\\\\\\\\\\\\\"]\\\\\"}\",\n  \"form_id\": \"string\",\n  \"magic_link_sent\": boolean,\n  \"passwordless\": boolean,\n  \"is_confirmed_email\": boolean,\n  \"aliases\": Map<string, string>\n}'\nRequired body parameters: aid, email, password\nResponse:\n{\n    \"access_token\": \"eyJhbGciOiJzI1NiJ9.eyJpc3MiOiJod....scyI6IklEIn0.hq0CZg5cBBpZORd1rINYxy6s76-5lpzfca7264s\",\n    \"token_type\": \"Bearer\",\n    \"refresh_token\": \"RF6BI..s4eyj4\",\n    \"expires_in\": 2627999,\n    \"registration\": true,\n    \"email_confirmation_required\": false,\n    \"extend_expired_access_enabled\": false\n}",
+        "operationId" : "PostPublisherIdentityRegister",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/PublisherRegisterRequest"
+              }
+            }
+          },
+          "required" : false,
+          "x-tinypass-file-body" : false
+        },
+        "responses" : {
+          "200" : {
+            "description" : "successful operation",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "oneOf" : [
+                    {
+                      "$ref" : "#/components/schemas/TokenResponseResult"
+                    },
+                    {
+                      "$ref" : "#/components/schemas/PostPublisherIdentityRegisterError"
+                    },
+                    {
+                      "$ref" : "#/components/schemas/GenericErrorResponse"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "x-codegen-request-body-name" : "body"
+      }
+    },
+    "/publisher/identity/set/password" : {
+      "post" : {
+        "tags" : [
+          "PublisherIdentitySet"
+        ],
+        "summary" : "Set user password",
+        "description" : "Completes the password reset procedure by updating a user's password in Piano ID's database.\nThe <a href = \"https://docs.piano.io/api?endpoint=post~2F~2Fpublisher~2Freset~2Fpassword\"> password reset email</a> from Piano to the user contains a reset_password_token.\nAs the user is redirected to the client's website, the token is passed to the client.\nFor this endpoint, the client enters both the token and the new password the user has set.\n\nExamples:\ncurl:\ncurl --location 'https://{{domain}}/id/api/v1/publisher/identity/set/password' \n--header 'Authorization: {{api_token}}' \n--header 'Content-Type: application/json' \n--data-raw '{\n  \"aid\": \"string\",\n  \"reset_password_token\": \"string\",\n  \"password\": \"string\"\n}'\nRequired body parameters: aid, reset_password_token, password\n",
+        "operationId" : "PostPublisherIdentitySetPassword",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/PublisherSetPasswordRequest"
+              }
+            }
+          },
+          "required" : false,
+          "x-tinypass-file-body" : false
+        },
+        "responses" : {
+          "200" : {
+            "description" : "Success|OK",
+            "content" : {
+              
+            }
+          }
+        },
+        "x-codegen-request-body-name" : "body"
+      }
+    },
+    "/publisher/import/customFields/history" : {
+      "post" : {
+        "tags" : [
+          "PublisherImportCustomFields"
+        ],
+        "summary" : "Get custom field history",
+        "description" : "Returns the history of custom field values.",
+        "operationId" : "PostPublisherImportCustomFieldsHistory",
+        "parameters" : [
+          {
+            "name" : "aid",
+            "in" : "query",
+            "schema" : {
+              "type" : "string"
+            }
+          },
+          {
+            "name" : "header_size",
+            "in" : "query",
+            "schema" : {
+              "type" : "integer",
+              "format" : "int32"
+            }
+          }
+        ],
+        "requestBody" : {
+          "content" : {
+            "multipart/form-data" : {
+              "schema" : {
+                "type" : "string",
+                "format" : "binary"
+              }
+            }
+          },
+          "required" : false,
+          "x-tinypass-file-body" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "successful operation",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "oneOf" : [
+                    {
+                      "$ref" : "#/components/schemas/ImportCFResultResult"
+                    },
+                    {
+                      "$ref" : "#/components/schemas/PostPublisherImportCustomFieldsHistoryError"
+                    },
+                    {
+                      "$ref" : "#/components/schemas/GenericErrorResponse"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "x-codegen-request-body-name" : "body"
+      }
+    },
+    "/publisher/login/social" : {
+      "post" : {
+        "tags" : [
+          "PublisherLogin"
+        ],
+        "summary" : "Initiate social login for user",
+        "description" : "Returns the URL of the social provider's login page. Read more <a href = \\\"https://docs.piano.io/piano-id-api/#social_login\\\">here</a>.\n\nExamples:\ncurl --location --request POST 'https://{{id.piano.io}}/id/api/v1/publisher/login/social?aid={{aid}}&api_token={{api_token}}&social_type=FACEBOOK&redirect_uri=http%3A%2F%2Flocalhost%3A8081%2F'\nResponse:\n{\n\"uri\": \"https://{{social_media_url}}/facebook/v2.6/dialog/oauth?display=popup&response_type=code&client_id=370028703787948&redirect_uri=https%3A%2F%2Fmeta.piano.dev%3A8443%2Fid%2Fapi%2Fv1%2Fidentity%2Flogin%2Fsocial%2Fcallback&scope=email&state=Ka6BIRs1p13c\"\n}\n\nOn error:\n{\n    \"error_code_list\": [\n{\n\"message\": \"Invalid token for app\"\n}\n],\n\"force_show_captcha\": \"false\"\n}",
+        "operationId" : "PostPublisherLoginSocial",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/PostPublisherLoginSocialRequest"
+              }
+            }
+          },
+          "required" : false
+        },
+        "responses" : {
+          "200" : {
+            "description" : "successful operation",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "oneOf" : [
+                    {
+                      "$ref" : "#/components/schemas/SocialLinkResponseResult"
+                    },
+                    {
+                      "$ref" : "#/components/schemas/PostPublisherLoginSocialError"
+                    },
+                    {
+                      "$ref" : "#/components/schemas/GenericErrorResponse"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "x-codegen-request-body-name" : "body"
+      }
+    },
+    "/publisher/login/social/code" : {
+      "post" : {
+        "tags" : [
+          "PublisherLoginSocial"
+        ],
+        "summary" : "Exchange social code for access token",
+        "description" : "\n            Completes social user login by exchanging the code received from the social network for a Piano ID access token. Read more <a href = \\\"https://docs.piano.io/social-user-login/\\\">here</a>.\\n\\n\n            Example:\\n\n            curl --location --request POST 'https://{{id.piano.io}}/id/api/v1/publisher/login/social/code?aid={{aid}}&api_token={{api_token}}&response_id=SAR2NXQvPZQab1X2dAit6sV4liWRilWQ7AdDLOFnHdQIs1dnlx'\\n\n            return:\\n\n            {\\n\n            \"access_token\": \"eyJhbGciOiJIUzI1NiJ9.eyJpc3YifQ.xV-pKy6YGKn9QSYphs4VKpPzOLkh13IKHgP7I6MQhQc\",\\n\n            \"status\": \"confirm\",\\n\n            \"linking_state\": \"4PLo4Ts1dnlx\",\\n\n            \"social_type\": \"GOOGLE\",\\n\n            \"email\": \"aa31@aa.com\",\\n\n            \"first_name\": \"\",\\n\n            \"last_name\": \"\",\\n\n            \"password_confirmation_available\": true,\\n\n            \"linked_social_accounts\": [],\\n\n            \"redirect_uri\": \"http://localhost:8081/\"\\n\n            }\\n\n        ",
+        "operationId" : "PostPublisherLoginSocialCode",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/PostPublisherLoginSocialCodeRequest"
+              }
+            }
+          },
+          "required" : false
+        },
+        "responses" : {
+          "200" : {
+            "description" : "Success|OK",
+            "content" : {
+              
+            }
+          }
+        },
+        "x-codegen-request-body-name" : "body"
+      }
+    },
+    "/publisher/login/social/codeAdditional" : {
+      "post" : {
+        "tags" : [
+          "PublisherLoginSocial"
+        ],
+        "summary" : "Redirect user to consents during social login",
+        "description" : "Redirects the user to the consents page if they haven't checked some required consents before social login. Returns an access token. Read more <a href = \"https://docs.piano.io/social-user-login/\">here</a>.\n\nExamples:\ncurl --location 'https://id.piano.io/id/api/v1/publisher/login/social/codeAdditional?aid=MKSa3N1Msu&api_token=9xuodmXivFZaHy9VU8UHtIvUYlBalTTC8IHeFAbn&additional_input_state=QiDS1ts20rf0'\n--header 'Content-Type: application/json'\n--data '{\"consents\":[{\"field_id\":\"registration_1\",\"checked\":true},{\"field_id\":\"registration_2\",\"checked\":true}],\"custom_field_values\":[{\"field_name\":\"text_id\",\"value\":\"valuetext\"}]}'\n",
+        "operationId" : "PostPublisherLoginSocialCodeAdditional",
+        "parameters" : [
+          {
+            "name" : "aid",
+            "in" : "query",
+            "description" : "Application aid",
+            "required" : true,
+            "schema" : {
+              "type" : "string"
+            }
+          },
+          {
+            "name" : "api_token",
+            "in" : "query",
+            "description" : "Application api token",
+            "required" : true,
+            "schema" : {
+              "type" : "string"
+            }
+          },
+          {
+            "name" : "additional_input_state",
+            "in" : "query",
+            "description" : "additional_input_state from /login/social/code",
+            "schema" : {
+              "type" : "string"
+            }
+          }
+        ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/SocialAdditionalInputRequest"
+              }
+            }
+          },
+          "required" : false,
+          "x-tinypass-file-body" : false
+        },
+        "responses" : {
+          "200" : {
+            "description" : "Success|OK",
+            "content" : {
+              
+            }
+          }
+        },
+        "x-codegen-request-body-name" : "body"
+      }
+    },
+    "/publisher/login/social/codeConfirm" : {
+      "post" : {
+        "tags" : [
+          "PublisherLoginSocial"
+        ],
+        "summary" : "Merge social and Piano ID accounts during social user login",
+        "description" : "Merges the user's social and Piano ID accounts during social login. Returns an access token. Read more <a href = \"https://docs.piano.io/social-user-login/\">here</a>.\n\nExamples:\nFor an existing user with email/password registration:\ncurl --location --request POST 'https://id.piano.io/id/api/v1/publisher/login/social/codeConfirm?aid={{aid}}&api_token={{api_token}}&linking_state=4PLo4Ts1dnlx&email=aa22%40aa.com2&password=Passw0rd'\nFor an existing user with a social account:\ncurl --location --request POST 'https://id.piano.io/id/api/v1/publisher/login/social/codeConfirm?aid={{aid}}&api_token={{api_token}}&linking_state=4PLo4Ts1dnlx&confimed_token={{user_token}}'\nResponse:\n{\n\"access_token\": \"eyJhbGciOiJIUzI1NiJ9.eyJpc3YifQ.xV-pKy6YGKn9QSYphs4VKpPzOLkh13IKHgP7I6MQhQc\"\n}",
+        "operationId" : "PostPublisherLoginSocialCodeConfirm",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/PostPublisherLoginSocialCodeConfirmRequest"
+              }
+            }
+          },
+          "required" : false
+        },
+        "responses" : {
+          "200" : {
+            "description" : "Success|OK",
+            "content" : {
+              
+            }
+          }
+        },
+        "x-codegen-request-body-name" : "body"
+      }
+    },
+    "/publisher/logout" : {
+      "post" : {
+        "tags" : [
+          "Publisher"
+        ],
+        "summary" : "Log out user",
+        "description" : "Terminates a user session.\n\nExamples:\ncurl:\ncurl --location 'https://api.piano.io/id/api/v1/publisher/logout?aid={{aid}}&token={{user_token}}'\n--header 'Authorization: {{api_token}}'",
+        "operationId" : "PostPublisherLogout",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/PostPublisherLogoutRequest"
+              }
+            }
+          },
+          "required" : false
+        },
+        "responses" : {
+          "200" : {
+            "description" : "successful operation",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "oneOf" : [
+                    {
+                      "$ref" : "#/components/schemas/LogoutResponseResult"
+                    },
+                    {
+                      "$ref" : "#/components/schemas/PostPublisherLogoutError"
+                    },
+                    {
+                      "$ref" : "#/components/schemas/GenericErrorResponse"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "x-codegen-request-body-name" : "body"
+      }
+    },
+    "/publisher/reset/password" : {
+      "post" : {
+        "tags" : [
+          "PublisherReset"
+        ],
+        "summary" : "Send password reset email",
+        "description" : "Sends a password reset email to the user.\n\nExamples:\ncurl:\ncurl --location --request POST 'https://id.piano.io/id/api/v1/publisher/reset/password?aid={{aid}}&email=aa%40aa.com'\n--header 'Authorization: {{api_token}}'",
+        "operationId" : "PostPublisherResetPassword",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/PostPublisherResetPasswordRequest"
+              }
+            }
+          },
+          "required" : false
+        },
+        "responses" : {
+          "200" : {
+            "description" : "Success|OK",
+            "content" : {
+              
+            }
+          }
+        },
+        "x-codegen-request-body-name" : "body"
+      }
+    },
+    "/publisher/token/refresh" : {
+      "post" : {
+        "tags" : [
+          "PublisherToken"
+        ],
+        "summary" : "Refresh access token",
+        "description" : "Updates a given refresh token to prevent access expiration.\n\nExamples:\ncurl:\ncurl --location --request POST 'https://id.piano.io/id/api/v1/publisher/token/refresh?aid=7WZhobP2su&refresh_token=adadasdas'\n--header 'Authorization: {{api_token}}'",
+        "operationId" : "PostPublisherTokenRefresh",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/PostPublisherTokenRefreshRequest"
+              }
+            }
+          },
+          "required" : false
+        },
+        "responses" : {
+          "200" : {
+            "description" : "successful operation",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "oneOf" : [
+                    {
+                      "$ref" : "#/components/schemas/TokenResponseResult"
+                    },
+                    {
+                      "$ref" : "#/components/schemas/PostPublisherTokenRefreshError"
+                    },
+                    {
+                      "$ref" : "#/components/schemas/GenericErrorResponse"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "x-codegen-request-body-name" : "body"
+      }
+    },
+    "/publisher/token/verify" : {
+      "post" : {
+        "tags" : [
+          "PublisherToken"
+        ],
+        "summary" : "Verify access token",
+        "description" : "Verifies a given access token. Returns \"success\" or an error message with a detailed description. Please use this method only for debugging; for regular access token check - <a href = \\\"https://docs.piano.io/api?endpoint=get~2F~2Fidentity~2Ftoken~2Fvalidation\\\">/id/api/v1/identity/token/validation</a>.\n\nExamples:\n\ncurl:\ncurl --location --request POST 'https://api.piano.io/id/api/v1/publisher/token/verify?aid={aid}&token={token}'\n\n",
+        "operationId" : "PostPublisherTokenVerify",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/PostPublisherTokenVerifyRequest"
+              }
+            }
+          },
+          "required" : false
+        },
+        "responses" : {
+          "200" : {
+            "description" : "successful operation",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "oneOf" : [
+                    {
+                      "$ref" : "#/components/schemas/TokenResponseResult"
+                    },
+                    {
+                      "$ref" : "#/components/schemas/PostPublisherTokenVerifyError"
+                    },
+                    {
+                      "$ref" : "#/components/schemas/GenericErrorResponse"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "x-codegen-request-body-name" : "body"
+      }
+    },
+    "/publisher/userinfo/aliases" : {
+      "get" : {
+        "tags" : [
+          "PublisherUserinfo"
+        ],
+        "summary" : "Get user aliases",
+        "operationId" : "GetPublisherUserinfoAliases",
+        "parameters" : [
+          {
+            "name" : "aid",
+            "in" : "query",
+            "description" : "Application aid",
+            "required" : true,
+            "schema" : {
+              "type" : "string"
+            }
+          },
+          {
+            "name" : "uid",
+            "in" : "query",
+            "description" : "User's uid",
+            "required" : true,
+            "schema" : {
+              "type" : "string"
+            }
+          }
+        ],
+        "responses" : {
+          "200" : {
+            "description" : "Success|OK",
+            "content" : {
+              
+            }
+          }
+        }
+      },
+      "post" : {
+        "tags" : [
+          "PublisherUserinfo"
+        ],
+        "summary" : "Set user aliases",
+        "description" : "Not provided aliases values are marking for deleting.",
+        "operationId" : "PostPublisherUserinfoAliases",
+        "parameters" : [
+          {
+            "name" : "aid",
+            "in" : "query",
+            "description" : "Application aid",
+            "required" : true,
+            "schema" : {
+              "type" : "string"
+            }
+          },
+          {
+            "name" : "uid",
+            "in" : "query",
+            "description" : "User's uid",
+            "required" : true,
+            "schema" : {
+              "type" : "string"
+            }
+          }
+        ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "type" : "object",
+                "additionalProperties" : {
+                  "type" : "string"
+                }
+              }
+            }
+          },
+          "required" : false,
+          "x-tinypass-file-body" : false
+        },
+        "responses" : {
+          "200" : {
+            "description" : "Success|OK",
+            "content" : {
+              
+            }
+          }
+        },
+        "x-codegen-request-body-name" : "body"
+      }
+    },
+    "/publisher/users/get" : {
+      "post" : {
+        "tags" : [
+          "PublisherUsers"
+        ],
+        "summary" : "Get user profile (Piano ID)",
+        "description" : "Returns a user profile selected either by email, uid or phone number. At least one of these parameters is required. If all three are passed, then the priority is set in following order:\n1. uid\n2. email\n3. phone number\nExamples:\n\ncurl:\ncurl --location --request POST 'https://id.piano.io/id/api/v1/publisher/users/get?aid={{aid}}&uid={{uid}}' \n--header 'Authorization: {{api_token}}'\n\ncurl --location --request POST 'https://id.piano.io/id/api/v1/publisher/users/get?aid={{aid}}&email={{email}}' \n--header 'Authorization: {{api_token}}'\n\ncurl --location --request POST 'https://id.piano.io/id/api/v1/publisher/users/get?aid={{aid}}&phone={{phone}}' \n--header 'Authorization: {{api_token}}'\n\n",
+        "operationId" : "PostPublisherUsersGet",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/PostPublisherUsersGetRequest"
+              }
+            }
+          },
+          "required" : false
+        },
+        "responses" : {
+          "200" : {
+            "description" : "successful operation",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "oneOf" : [
+                    {
+                      "$ref" : "#/components/schemas/PublisherUserProfileResponseResult"
+                    },
+                    {
+                      "$ref" : "#/components/schemas/PostPublisherUsersGetError"
+                    },
+                    {
+                      "$ref" : "#/components/schemas/GenericErrorResponse"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "x-codegen-request-body-name" : "body"
+      }
+    }
+  },
+  "components" : {
+    "schemas" : {
+      "PostPublisherResetPasswordError" : {
+        "type" : "object",
+        "required" : [
+          "code"
+        ],
+        "properties" : {
+          "code" : {
+            "type" : "integer",
+            "example" : "400, 403, 404, 429",
+            "description" : "- 400: Wrong params\n\n- 403: Invalid token or User\n\n- 404: Identity not found\n\n- 429: Too Many Requests\n\n",
+            "enum" : [
+              400,
+              403,
+              404,
+              429
+            ]
+          },
+          "message" : {
+            "type" : "string"
+          },
+          "localizedMessage" : {
+            "type" : "string"
+          }
+        }
+      },
+      "PostPublisherTokenRefreshError" : {
+        "type" : "object",
+        "required" : [
+          "code"
+        ],
+        "properties" : {
+          "code" : {
+            "type" : "integer",
+            "example" : "400, 403, 429",
+            "description" : "- 400: Wrong params\n\n- 403: Invalid token or User\n\n- 429: Too Many Requests\n\n",
+            "enum" : [
+              400,
+              403,
+              429
+            ]
+          },
+          "message" : {
+            "type" : "string"
+          },
+          "localizedMessage" : {
+            "type" : "string"
+          }
+        }
+      },
+      "PostPublisherLogoutError" : {
+        "type" : "object",
+        "required" : [
+          "code"
+        ],
+        "properties" : {
+          "code" : {
+            "type" : "integer",
+            "example" : "400, 403, 429",
+            "description" : "- 400: Wrong params\n\n- 403: Invalid token or User\n\n- 429: Too Many Requests\n\n",
+            "enum" : [
+              400,
+              403,
+              429
+            ]
+          },
+          "message" : {
+            "type" : "string"
+          },
+          "localizedMessage" : {
+            "type" : "string"
+          }
+        }
+      },
+      "PostPublisherIdentityPasswordError" : {
+        "type" : "object",
+        "required" : [
+          "code"
+        ],
+        "properties" : {
+          "code" : {
+            "type" : "integer",
+            "example" : "400, 403, 404, 429",
+            "description" : "- 400: Wrong params\n\n- 403: Invalid token or User\n\n- 404: Identity not found\n\n- 429: Too Many Requests\n\n",
+            "enum" : [
+              400,
+              403,
+              404,
+              429
+            ]
+          },
+          "message" : {
+            "type" : "string"
+          },
+          "localizedMessage" : {
+            "type" : "string"
+          }
+        }
+      },
+      "PostPublisherLoginSocialError" : {
+        "type" : "object",
+        "required" : [
+          "code"
+        ],
+        "properties" : {
+          "code" : {
+            "type" : "integer",
+            "example" : "400, 403, 429",
+            "description" : "- 400: Wrong params\n\n- 403: Invalid token or User\n\n- 429: Too Many Requests\n\n",
+            "enum" : [
+              400,
+              403,
+              429
+            ]
+          },
+          "message" : {
+            "type" : "string"
+          },
+          "localizedMessage" : {
+            "type" : "string"
+          }
+        }
+      },
+      "PostPublisherCustomFieldError" : {
+        "type" : "object",
+        "required" : [
+          "code"
+        ],
+        "properties" : {
+          "code" : {
+            "type" : "integer",
+            "example" : "400, 403, 429",
+            "description" : "- 400: Wrong params\n\n- 403: Invalid token or User\n\n- 429: Too Many Requests\n\n",
+            "enum" : [
+              400,
+              403,
+              429
+            ]
+          },
+          "message" : {
+            "type" : "string"
+          },
+          "localizedMessage" : {
+            "type" : "string"
+          }
+        }
+      },
+      "PostPublisherIdentitySetPasswordError" : {
+        "type" : "object",
+        "required" : [
+          "code"
+        ],
+        "properties" : {
+          "code" : {
+            "type" : "integer",
+            "example" : "400, 403, 429",
+            "description" : "- 400: Wrong params\n\n- 403: Invalid token or User\n\n- 429: Too Many Requests\n\n",
+            "enum" : [
+              400,
+              403,
+              429
+            ]
+          },
+          "message" : {
+            "type" : "string"
+          },
+          "localizedMessage" : {
+            "type" : "string"
+          }
+        }
+      },
+      "PostPublisherIdentityRegisterError" : {
+        "type" : "object",
+        "required" : [
+          "code"
+        ],
+        "properties" : {
+          "code" : {
+            "type" : "integer",
+            "example" : "400, 403, 429",
+            "description" : "- 400: Wrong params\n\n- 403: Invalid token or User\n\n- 429: Too Many Requests\n\n",
+            "enum" : [
+              400,
+              403,
+              429
+            ]
+          },
+          "message" : {
+            "type" : "string"
+          },
+          "localizedMessage" : {
+            "type" : "string"
+          }
+        }
+      },
+      "PostPublisherIdentityDoiStatusError" : {
+        "type" : "object",
+        "required" : [
+          "code"
+        ],
+        "properties" : {
+          "code" : {
+            "type" : "integer",
+            "example" : "400, 403, 404, 429",
+            "description" : "- 400: Wrong params\n\n- 403: Invalid token or User\n\n- 404: User not found\n\n- 429: Too Many Requests\n\n",
+            "enum" : [
+              400,
+              403,
+              404,
+              429
+            ]
+          },
+          "message" : {
+            "type" : "string"
+          },
+          "localizedMessage" : {
+            "type" : "string"
+          }
+        }
+      },
+      "PostPublisherIdentityLoginError" : {
+        "type" : "object",
+        "required" : [
+          "code"
+        ],
+        "properties" : {
+          "code" : {
+            "type" : "integer",
+            "example" : "400, 403, 429",
+            "description" : "- 400: Wrong params\n\n- 403: Invalid token or User\n\n- 429: Too Many Requests\n\n",
+            "enum" : [
+              400,
+              403,
+              429
+            ]
+          },
+          "message" : {
+            "type" : "string"
+          },
+          "localizedMessage" : {
+            "type" : "string"
+          }
+        }
+      },
+      "PostPublisherLoginSocialCodeConfirmError" : {
+        "type" : "object",
+        "required" : [
+          "code"
+        ],
+        "properties" : {
+          "code" : {
+            "type" : "integer",
+            "example" : "400, 403, 429",
+            "description" : "- 400: Wrong params\n\n- 403: Invalid token or User\n\n- 429: Too Many Requests\n\n",
+            "enum" : [
+              400,
+              403,
+              429
+            ]
+          },
+          "message" : {
+            "type" : "string"
+          },
+          "localizedMessage" : {
+            "type" : "string"
+          }
+        }
+      },
+      "PostPublisherImportCustomFieldsHistoryError" : {
+        "type" : "object",
+        "required" : [
+          "code"
+        ],
+        "properties" : {
+          "code" : {
+            "type" : "integer",
+            "example" : "400",
+            "description" : "- 400: Wrong data in csv\n\n",
+            "enum" : [
+              400
+            ]
+          },
+          "message" : {
+            "type" : "string"
+          },
+          "localizedMessage" : {
+            "type" : "string"
+          }
+        }
+      },
+      "PostPublisherFormError" : {
+        "type" : "object",
+        "required" : [
+          "code"
+        ],
+        "properties" : {
+          "code" : {
+            "type" : "integer",
+            "example" : "400, 403, 429",
+            "description" : "- 400: Wrong params\n\n- 403: Invalid token or User\n\n- 429: Too Many Requests\n\n",
+            "enum" : [
+              400,
+              403,
+              429
+            ]
+          },
+          "message" : {
+            "type" : "string"
+          },
+          "localizedMessage" : {
+            "type" : "string"
+          }
+        }
+      },
+      "PostPublisherUsersGetError" : {
+        "type" : "object",
+        "required" : [
+          "code"
+        ],
+        "properties" : {
+          "code" : {
+            "type" : "integer",
+            "example" : "400, 403, 429",
+            "description" : "- 400: Wrong params\n\n- 403: Invalid token or User\n\n- 429: Too Many Requests\n\n",
+            "enum" : [
+              400,
+              403,
+              429
+            ]
+          },
+          "message" : {
+            "type" : "string"
+          },
+          "localizedMessage" : {
+            "type" : "string"
+          }
+        }
+      },
+      "PostPublisherTokenVerifyError" : {
+        "type" : "object",
+        "required" : [
+          "code"
+        ],
+        "properties" : {
+          "code" : {
+            "type" : "integer",
+            "example" : "400, 403, 429",
+            "description" : "- 400: Wrong params\n\n- 403: Invalid token or User\n\n- 429: Too Many Requests\n\n",
+            "enum" : [
+              400,
+              403,
+              429
+            ]
+          },
+          "message" : {
+            "type" : "string"
+          },
+          "localizedMessage" : {
+            "type" : "string"
+          }
+        }
+      },
+      "PostPublisherUserinfoAliasesError" : {
+        "type" : "object",
+        "required" : [
+          "code"
+        ],
+        "properties" : {
+          "code" : {
+            "type" : "integer",
+            "example" : "403, 429",
+            "description" : "- 403: Invalid token or User\n\n- 429: Too Many Requests\n\n",
+            "enum" : [
+              403,
+              429
+            ]
+          },
+          "message" : {
+            "type" : "string"
+          },
+          "localizedMessage" : {
+            "type" : "string"
+          }
+        }
+      },
+      "GetPublisherAuditUserError" : {
+        "type" : "object",
+        "required" : [
+          "code"
+        ],
+        "properties" : {
+          "code" : {
+            "type" : "integer",
+            "example" : "400, 403, 429",
+            "description" : "- 400: Wrong params\n\n- 403: Invalid token or User\n\n- 429: Too Many Requests\n\n",
+            "enum" : [
+              400,
+              403,
+              429
+            ]
+          },
+          "message" : {
+            "type" : "string"
+          },
+          "localizedMessage" : {
+            "type" : "string"
+          }
+        }
+      },
+      "PostPublisherFormJwtError" : {
+        "type" : "object",
+        "required" : [
+          "code"
+        ],
+        "properties" : {
+          "code" : {
+            "type" : "integer",
+            "example" : "400, 403, 429",
+            "description" : "- 400: Wrong params\n\n- 403: Invalid token or User\n\n- 429: Too Many Requests\n\n",
+            "enum" : [
+              400,
+              403,
+              429
+            ]
+          },
+          "message" : {
+            "type" : "string"
+          },
+          "localizedMessage" : {
+            "type" : "string"
+          }
+        }
+      },
+      "PostPublisherLoginSocialCodeError" : {
+        "type" : "object",
+        "required" : [
+          "code"
+        ],
+        "properties" : {
+          "code" : {
+            "type" : "integer",
+            "example" : "400, 403, 429",
+            "description" : "- 400: Wrong params\n\n- 403: Invalid token or User\n\n- 429: Too Many Requests\n\n",
+            "enum" : [
+              400,
+              403,
+              429
+            ]
+          },
+          "message" : {
+            "type" : "string"
+          },
+          "localizedMessage" : {
+            "type" : "string"
+          }
+        }
+      },
+      "PostPublisherLoginSocialCodeAdditionalError" : {
+        "type" : "object",
+        "required" : [
+          "code"
+        ],
+        "properties" : {
+          "code" : {
+            "type" : "integer",
+            "example" : "400, 403, 429",
+            "description" : "- 400: Wrong params\n\n- 403: Invalid token or User\n\n- 429: Too Many Requests\n\n",
+            "enum" : [
+              400,
+              403,
+              429
+            ]
+          },
+          "message" : {
+            "type" : "string"
+          },
+          "localizedMessage" : {
+            "type" : "string"
+          }
+        }
+      },
+      "GetPublisherUserinfoAliasesError" : {
+        "type" : "object",
+        "required" : [
+          "code"
+        ],
+        "properties" : {
+          "code" : {
+            "type" : "integer",
+            "example" : "403, 429",
+            "description" : "- 403: Invalid token or User\n\n- 429: Too Many Requests\n\n",
+            "enum" : [
+              403,
+              429
+            ]
+          },
+          "message" : {
+            "type" : "string"
+          },
+          "localizedMessage" : {
+            "type" : "string"
+          }
+        }
+      },
+      "ConsentModel" : {
+        "type" : "object",
+        "properties" : {
+          "consentPubId" : {
+            "type" : "string"
+          },
+          "displayText" : {
+            "type" : "string"
+          },
+          "fieldName" : {
+            "type" : "string"
+          },
+          "fieldId" : {
+            "type" : "string"
+          },
+          "sortOrder" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "checked" : {
+            "type" : "boolean"
+          },
+          "required" : {
+            "type" : "boolean"
+          }
+        }
+      },
+      "CustomFieldAttributeDto" : {
+        "type" : "object",
+        "properties" : {
+          "dateFormat" : {
+            "type" : "string"
+          },
+          "autofill" : {
+            "type" : "boolean"
+          },
+          "default" : {
+            "type" : "boolean"
+          },
+          "dmpSegmentationEnable" : {
+            "type" : "boolean"
+          },
+          "multiline" : {
+            "type" : "boolean"
+          },
+          "defaultValue" : {
+            "type" : "string"
+          },
+          "placeholder" : {
+            "type" : "string"
+          },
+          "preSelectCountryByIp" : {
+            "type" : "boolean"
+          },
+          "global" : {
+            "type" : "boolean"
+          },
+          "globalStatus" : {
+            "type" : "string",
+            "enum" : [
+              "migration",
+              "completed",
+              "error"
+            ]
+          },
+          "aidList" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          },
+          "linkedTermField" : {
+            "type" : "boolean"
+          }
+        }
+      },
+      "CustomFieldDefinitionDto" : {
+        "type" : "object",
+        "properties" : {
+          "fieldName" : {
+            "type" : "string"
+          },
+          "title" : {
+            "type" : "string"
+          },
+          "comment" : {
+            "type" : "string"
+          },
+          "editable" : {
+            "type" : "boolean"
+          },
+          "dataType" : {
+            "type" : "string",
+            "enum" : [
+              "TEXT",
+              "ISO_DATE",
+              "BOOLEAN",
+              "NUMBER",
+              "SINGLE_SELECT_LIST",
+              "MULTI_SELECT_LIST",
+              "PHONE_NUMBER"
+            ]
+          },
+          "validators" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/Validator"
+            }
+          },
+          "options" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          },
+          "favouriteOptions" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          },
+          "optionsLink" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "setName" : {
+            "type" : "string"
+          },
+          "requiredByDefault" : {
+            "type" : "boolean"
+          },
+          "valuesCount" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "archived" : {
+            "type" : "boolean"
+          },
+          "defaultSortOrder" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "attribute" : {
+            "$ref" : "#/components/schemas/CustomFieldAttributeDto"
+          },
+          "tooltip" : {
+            "$ref" : "#/components/schemas/Tooltip"
+          },
+          "parent" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "hidden" : {
+            "type" : "boolean"
+          }
+        }
+      },
+      "CustomFieldValueDto" : {
+        "type" : "object",
+        "properties" : {
+          "fieldName" : {
+            "type" : "string"
+          },
+          "value" : {
+            "type" : "string"
+          },
+          "created" : {
+            "type" : "integer",
+            "format" : "timestamp"
+          },
+          "emailCreator" : {
+            "type" : "string"
+          },
+          "sortOrder" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }
+      },
+      "ImportCFResult" : {
+        "type" : "object",
+        "properties" : {
+          "code" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "ts" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "data" : {
+            "type" : "object",
+            "additionalProperties" : {
+              "type" : "array",
+              "items" : {
+                "type" : "object",
+                "additionalProperties" : {
+                  "type" : "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "InputStream" : {
+        "type" : "object"
+      },
+      "LogoutResponse" : {
+        "type" : "object",
+        "properties" : {
+          "jti" : {
+            "type" : "string"
+          }
+        }
+      },
+      "OAuthRequest" : {
+        "type" : "object",
+        "properties" : {
+          "clientId" : {
+            "type" : "string"
+          },
+          "refreshToken" : {
+            "type" : "string"
+          },
+          "grantType" : {
+            "type" : "string"
+          },
+          "code" : {
+            "type" : "string"
+          },
+          "clientSecret" : {
+            "type" : "string"
+          },
+          "redirectUri" : {
+            "type" : "string"
+          },
+          "codeVerifier" : {
+            "type" : "string"
+          }
+        }
+      },
+      "PublisherCustomFieldResponse" : {
+        "type" : "object",
+        "properties" : {
+          "name" : {
+            "type" : "string"
+          },
+          "value" : {
+            "type" : "string"
+          }
+        }
+      },
+      "PublisherLoginRequest" : {
+        "type" : "object",
+        "properties" : {
+          "aid" : {
+            "type" : "string"
+          },
+          "email" : {
+            "type" : "string"
+          },
+          "password" : {
+            "type" : "string"
+          },
+          "stayLoggedIn" : {
+            "type" : "boolean"
+          },
+          "aliasName" : {
+            "type" : "string"
+          },
+          "loginType" : {
+            "type" : "string"
+          }
+        }
+      },
+      "PublisherPasswordRequest" : {
+        "type" : "object",
+        "properties" : {
+          "aid" : {
+            "type" : "string"
+          },
+          "uid" : {
+            "type" : "string"
+          },
+          "password" : {
+            "type" : "string"
+          },
+          "currentPassword" : {
+            "type" : "string"
+          },
+          "forceUpdate" : {
+            "type" : "boolean"
+          }
+        }
+      },
+      "PublisherRegisterRequest" : {
+        "type" : "object",
+        "properties" : {
+          "aid" : {
+            "type" : "string"
+          },
+          "email" : {
+            "type" : "string"
+          },
+          "firstName" : {
+            "type" : "string"
+          },
+          "lastName" : {
+            "type" : "string"
+          },
+          "password" : {
+            "type" : "string"
+          },
+          "consents" : {
+            "type" : "string"
+          },
+          "customFields" : {
+            "type" : "string"
+          },
+          "formId" : {
+            "type" : "string"
+          },
+          "phone" : {
+            "type" : "string"
+          },
+          "aliases" : {
+            "type" : "object",
+            "additionalProperties" : {
+              "type" : "string"
+            }
+          },
+          "phoneDigitalCode" : {
+            "type" : "string"
+          },
+          "passwordless" : {
+            "type" : "boolean"
+          },
+          "confirmedEmail" : {
+            "type" : "boolean"
+          },
+          "magicLinkSent" : {
+            "type" : "boolean"
+          }
+        }
+      },
+      "PublisherSetPasswordRequest" : {
+        "type" : "object",
+        "properties" : {
+          "aid" : {
+            "type" : "string"
+          },
+          "resetPasswordToken" : {
+            "type" : "string"
+          },
+          "password" : {
+            "type" : "string"
+          }
+        }
+      },
+      "PublisherUserProfileResponse" : {
+        "type" : "object",
+        "properties" : {
+          "firstName" : {
+            "type" : "string"
+          },
+          "lastName" : {
+            "type" : "string"
+          },
+          "uid" : {
+            "type" : "string"
+          },
+          "email" : {
+            "type" : "string"
+          },
+          "phone" : {
+            "type" : "string"
+          },
+          "createDate" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "reset_password_email_sent" : {
+            "type" : "boolean"
+          },
+          "password" : {
+            "type" : "string"
+          },
+          "custom_fields" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/PublisherCustomFieldResponse"
+            }
+          },
+          "aliases" : {
+            "type" : "object",
+            "additionalProperties" : {
+              "type" : "string"
+            }
+          }
+        }
+      },
+      "SocialAdditionalInputRequest" : {
+        "type" : "object",
+        "properties" : {
+          "additionalInputState" : {
+            "type" : "string"
+          },
+          "consents" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/ConsentModel"
+            }
+          },
+          "customFieldValues" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/CustomFieldValueDto"
+            }
+          },
+          "email" : {
+            "type" : "string"
+          },
+          "aliases" : {
+            "type" : "object",
+            "additionalProperties" : {
+              "type" : "string"
+            }
+          }
+        }
+      },
+      "SocialLinkResponse" : {
+        "type" : "object",
+        "properties" : {
+          "uri" : {
+            "type" : "string"
+          }
+        }
+      },
+      "SocialLinkingResponse" : {
+        "type" : "object",
+        "properties" : {
+          "identitySocialLinkingState" : {
+            "type" : "string"
+          },
+          "passwordConfirmationAvailable" : {
+            "type" : "boolean"
+          },
+          "linkedSocialAccounts" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          },
+          "email" : {
+            "type" : "string"
+          },
+          "firstName" : {
+            "type" : "string"
+          },
+          "lastName" : {
+            "type" : "string"
+          },
+          "socialType" : {
+            "type" : "string"
+          },
+          "isPasswordless" : {
+            "type" : "boolean"
+          }
+        }
+      },
+      "TokenResponse" : {
+        "type" : "object",
+        "properties" : {
+          "accessToken" : {
+            "type" : "string"
+          },
+          "tokenType" : {
+            "type" : "string"
+          },
+          "refreshToken" : {
+            "type" : "string"
+          },
+          "code" : {
+            "type" : "string"
+          },
+          "error" : {
+            "type" : "string",
+            "enum" : [
+              "invalid_request",
+              "unauthorized_client",
+              "access_denied",
+              "unsupported_response_type",
+              "invalid_scope",
+              "server_error",
+              "temporarily_unavailable"
+            ]
+          },
+          "errorDescription" : {
+            "type" : "string"
+          },
+          "expiresIn" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "preauthToken" : {
+            "type" : "string"
+          },
+          "socialLinkingResponse" : {
+            "$ref" : "#/components/schemas/SocialLinkingResponse"
+          },
+          "registration" : {
+            "type" : "boolean"
+          },
+          "siteCookieDomain" : {
+            "type" : "string"
+          },
+          "emailConfirmationRequired" : {
+            "type" : "boolean"
+          },
+          "preConfirmedUser" : {
+            "type" : "boolean"
+          },
+          "loginTokenId" : {
+            "type" : "string"
+          },
+          "extendExpiredAccessEnabled" : {
+            "type" : "boolean"
+          },
+          "directionUrl" : {
+            "type" : "string"
+          },
+          "passwordlessToken" : {
+            "type" : "string"
+          },
+          "pubId" : {
+            "type" : "string"
+          },
+          "authorizedBySso" : {
+            "type" : "boolean"
+          },
+          "message" : {
+            "type" : "string"
+          },
+          "ssoConfirmation" : {
+            "type" : "boolean"
+          },
+          "twoFactorAuthRequired" : {
+            "type" : "boolean"
+          },
+          "phoneConfirmationRequired" : {
+            "type" : "boolean"
+          }
+        }
+      },
+      "Tooltip" : {
+        "type" : "object",
+        "properties" : {
+          "enabled" : {
+            "type" : "boolean"
+          },
+          "type" : {
+            "type" : "string",
+            "enum" : [
+              "InfoIcon",
+              "HoverOverField"
+            ]
+          },
+          "text" : {
+            "type" : "string"
+          }
+        }
+      },
+      "Validator" : {
+        "type" : "object",
+        "properties" : {
+          "type" : {
+            "type" : "string",
+            "enum" : [
+              "NOP",
+              "MIN",
+              "MAX",
+              "REGEXP",
+              "MIN_AGE",
+              "STR_LENGTH",
+              "DATE_AFTER",
+              "DATE_BEFORE",
+              "ONE_OF",
+              "MULTIPLE_OF",
+              "EMAIL",
+              "WHITELIST",
+              "BLACKLIST",
+              "MIN_CHOSEN",
+              "MAX_CHOSEN",
+              "PHONE_NUMBER",
+              "STEP"
+            ]
+          },
+          "params" : {
+            "type" : "object",
+            "additionalProperties" : {
+              "type" : "object",
+              "properties" : {
+                
+              }
+            }
+          },
+          "errorMessage" : {
+            "type" : "string"
+          }
+        }
+      },
+      "TokenResponseResult" : {
+        "required" : [
+          "TokenResponse"
+        ],
+        "type" : "object",
+        "properties" : {
+          "TokenResponse" : {
+            "$ref" : "#/components/schemas/TokenResponse"
+          }
+        },
+        "additionalProperties" : false
+      },
+      "ImportCFResultResult" : {
+        "required" : [
+          "ImportCFResult"
+        ],
+        "type" : "object",
+        "properties" : {
+          "ImportCFResult" : {
+            "$ref" : "#/components/schemas/ImportCFResult"
+          }
+        },
+        "additionalProperties" : false
+      },
+      "SocialLinkResponseResult" : {
+        "required" : [
+          "SocialLinkResponse"
+        ],
+        "type" : "object",
+        "properties" : {
+          "SocialLinkResponse" : {
+            "$ref" : "#/components/schemas/SocialLinkResponse"
+          }
+        },
+        "additionalProperties" : false
+      },
+      "LogoutResponseResult" : {
+        "required" : [
+          "LogoutResponse"
+        ],
+        "type" : "object",
+        "properties" : {
+          "LogoutResponse" : {
+            "$ref" : "#/components/schemas/LogoutResponse"
+          }
+        },
+        "additionalProperties" : false
+      },
+      "PublisherUserProfileResponseResult" : {
+        "required" : [
+          "PublisherUserProfileResponse"
+        ],
+        "type" : "object",
+        "properties" : {
+          "PublisherUserProfileResponse" : {
+            "$ref" : "#/components/schemas/PublisherUserProfileResponse"
+          }
+        },
+        "additionalProperties" : false
+      },
+      "PostPublisherFormRequest" : {
+        "required" : [
+          "aid",
+          "custom_fields",
+          "uid"
+        ],
+        "type" : "object",
+        "properties" : {
+          "aid" : {
+            "type" : "string",
+            "description" : "Application aid"
+          },
+          "uid" : {
+            "type" : "string",
+            "description" : "User's uid"
+          },
+          "custom_fields" : {
+            "type" : "string",
+            "description" : "JSON dictionary of the custom field: id as keys and user selection as values. For multi-select lists, the value will be an array of strings."
+          },
+          "form_id" : {
+            "type" : "string",
+            "description" : "\nPublic form ID. This field is optional. If this field is set, the validators of the form will check the custom fields of that form. The custom fields of other forms will be saved without being checked by the validators."
+          }
+        },
+        "additionalProperties" : false
+      },
+      "PostPublisherFormJwtRequest" : {
+        "required" : [
+          "aid",
+          "custom_fields",
+          "uid"
+        ],
+        "type" : "object",
+        "properties" : {
+          "aid" : {
+            "type" : "string",
+            "description" : "Application aid"
+          },
+          "uid" : {
+            "type" : "string",
+            "description" : "User's uid"
+          },
+          "custom_fields" : {
+            "type" : "string",
+            "description" : "JSON dictionary of the custom field: id as keys and user selection as values. For multi-select lists, the value will be an array of strings."
+          },
+          "form_id" : {
+            "type" : "string",
+            "description" : "\nPublic form ID. This field is optional. If this field is set, the validators of the form will check the custom fields of that form. The custom fields of other forms will be saved without being checked by the validators."
+          }
+        },
+        "additionalProperties" : false
+      },
+      "PostPublisherIdentityDoiStatusRequest" : {
+        "required" : [
+          "aid",
+          "email_confirmation_state",
+          "uid"
+        ],
+        "type" : "object",
+        "properties" : {
+          "aid" : {
+            "type" : "string",
+            "description" : "Application aid"
+          },
+          "uid" : {
+            "type" : "string",
+            "description" : "User's uid"
+          },
+          "email_confirmation_state" : {
+            "type" : "string",
+            "description" : "Email confirmation state could be CONFIRMED, PRE_CONFIRMED"
+          }
+        },
+        "additionalProperties" : false
+      },
+      "PostPublisherLoginSocialRequest" : {
+        "required" : [
+          "aid",
+          "api_token",
+          "social_type"
+        ],
+        "type" : "object",
+        "properties" : {
+          "aid" : {
+            "type" : "string",
+            "description" : "Application aid"
+          },
+          "social_type" : {
+            "type" : "string",
+            "description" : "Social media type; for example, FACEBOOK, GOOGLE, TWITTER, LINKEDIN, APPLE"
+          },
+          "redirect_uri" : {
+            "type" : "string",
+            "description" : "Landing url"
+          },
+          "ab_test_ids" : {
+            "type" : "string",
+            "description" : "Comma-separated list of A/B test ids for the OpenPass integration",
+            "format" : "multi"
+          },
+          "affiliate" : {
+            "type" : "boolean",
+            "description" : "Marker of the affiliate login for the OpenPass integration"
+          },
+          "api_token" : {
+            "type" : "string",
+            "description" : "Application api token"
+          },
+          "form_id" : {
+            "type" : "string",
+            "description" : "\nPublic form ID. This field is optional. If this field is set, the validators of the form will check the custom fields of that form. The custom fields of other forms will be saved without being checked by the validators."
+          }
+        },
+        "additionalProperties" : false
+      },
+      "PostPublisherLoginSocialCodeRequest" : {
+        "required" : [
+          "aid",
+          "api_token",
+          "response_id"
+        ],
+        "type" : "object",
+        "properties" : {
+          "aid" : {
+            "type" : "string",
+            "description" : "Application aid"
+          },
+          "api_token" : {
+            "type" : "string",
+            "description" : "Application api token"
+          },
+          "response_id" : {
+            "type" : "string",
+            "description" : "ResponseId from redirect url"
+          }
+        },
+        "additionalProperties" : false
+      },
+      "PostPublisherLoginSocialCodeConfirmRequest" : {
+        "required" : [
+          "aid",
+          "api_token",
+          "linking_state"
+        ],
+        "type" : "object",
+        "properties" : {
+          "aid" : {
+            "type" : "string",
+            "description" : "Application aid"
+          },
+          "api_token" : {
+            "type" : "string",
+            "description" : "Application api token"
+          },
+          "email" : {
+            "type" : "string",
+            "description" : "User's email address"
+          },
+          "password" : {
+            "type" : "string",
+            "description" : "The user's password"
+          },
+          "confimed_token" : {
+            "type" : "string",
+            "description" : "The access token from the user's previous authorisation"
+          },
+          "linking_state" : {
+            "type" : "string",
+            "description" : "linking_state from /login/social/code"
+          }
+        },
+        "additionalProperties" : false
+      },
+      "PostPublisherLogoutRequest" : {
+        "required" : [
+          "aid",
+          "token"
+        ],
+        "type" : "object",
+        "properties" : {
+          "aid" : {
+            "type" : "string",
+            "description" : "Application aid"
+          },
+          "token" : {
+            "type" : "string",
+            "description" : "User's JWT token"
+          }
+        },
+        "additionalProperties" : false
+      },
+      "PostPublisherResetPasswordRequest" : {
+        "required" : [
+          "aid"
+        ],
+        "type" : "object",
+        "properties" : {
+          "aid" : {
+            "type" : "string",
+            "description" : "Application aid"
+          },
+          "email" : {
+            "type" : "string",
+            "description" : "User's email address"
+          },
+          "phone" : {
+            "type" : "string",
+            "description" : "User's phone number"
+          },
+          "reset_password_url" : {
+            "type" : "string",
+            "description" : "Reset password url"
+          }
+        },
+        "additionalProperties" : false
+      },
+      "PostPublisherTokenRefreshRequest" : {
+        "required" : [
+          "aid",
+          "refresh_token"
+        ],
+        "type" : "object",
+        "properties" : {
+          "aid" : {
+            "type" : "string",
+            "description" : "Application aid"
+          },
+          "refresh_token" : {
+            "type" : "string",
+            "description" : "User's refresh token"
+          }
+        },
+        "additionalProperties" : false
+      },
+      "PostPublisherTokenVerifyRequest" : {
+        "required" : [
+          "aid",
+          "token"
+        ],
+        "type" : "object",
+        "properties" : {
+          "aid" : {
+            "type" : "string",
+            "description" : "Application aid"
+          },
+          "token" : {
+            "type" : "string",
+            "description" : "User's JWT token"
+          }
+        },
+        "additionalProperties" : false
+      },
+      "PostPublisherUsersGetRequest" : {
+        "required" : [
+          "aid"
+        ],
+        "type" : "object",
+        "properties" : {
+          "aid" : {
+            "type" : "string",
+            "description" : "Application aid"
+          },
+          "uid" : {
+            "type" : "string",
+            "description" : "User's uid"
+          },
+          "email" : {
+            "type" : "string",
+            "description" : "User's email address"
+          },
+          "phone" : {
+            "type" : "string",
+            "description" : "User's phone number"
+          }
+        },
+        "additionalProperties" : false
+      },
+      "GenericErrorResponse" : {
+        "required" : [
+          "code",
+          "message"
+        ],
+        "type" : "object",
+        "properties" : {
+          "code" : {
+            "type" : "integer"
+          },
+          "message" : {
+            "type" : "string"
+          }
+        },
+        "additionalProperties" : false
+      },
+      "GenericResponse" : {
+        "required" : [
+          "code",
+          "message"
+        ],
+        "type" : "object",
+        "properties" : {
+          "code" : {
+            "type" : "integer"
+          },
+          "message" : {
+            "type" : "string"
+          }
+        },
+        "additionalProperties" : true
+      }
+    }
+  },
+  "x-original-swagger-version" : "2.0"
+}

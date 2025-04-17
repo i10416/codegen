@@ -1,0 +1,2782 @@
+openapi: 3.0.1
+info:
+  title: anon
+  version: SNAPSHOT
+servers:
+  - url: /api/v3
+tags:
+  - name: Access
+  - name: AnonApp
+  - name: AnonAssets
+  - name: AnonCountry
+  - name: AnonCurrency
+  - name: EmailConfirmation
+  - name: AnonError
+  - name: Exposure
+  - name: LinkTermSession
+  - name: LinkedTerm
+  - name: AnonMobileSdk
+  - name: Oauth
+  - name: Subscription
+  - name: TelemetryUx
+  - name: AnonTermChange
+  - name: Conversion
+  - name: AnonUser
+paths:
+  /access/check:
+    get:
+      tags:
+        - Access
+      summary: Get access details for user and RID
+      description: >-
+        Gets the details of the access for a given user to a given resource.
+
+
+        On Jan. 31, 2023, the “term” field was removed from the response
+        (user_access(Access)). To get a term, you can still refer to
+        TermConversionDTO.term(Term) in <a
+        href="https://docs.piano.io/api/?endpoint=get~2F~2Fpublisher~2Fconversion~2Flist">/publisher/conversion/list</a>
+        or TermConversion.term(Term) in <a
+        href="https://docs.piano.io/api/?endpoint=get~2F~2Fconversion~2Flist">/conversion/list</a>
+        with AID and UID parameters.
+      operationId: GetAccessCheck
+      parameters:
+        - name: rid
+          in: query
+          description: The resource ID
+          required: true
+          schema:
+            type: string
+        - name: aid
+          in: query
+          description: The application ID
+          required: true
+          schema:
+            type: string
+        - name: tp_access_token_v2
+          in: query
+          description: Piano's access token (v2)
+          schema:
+            type: string
+        - name: umc
+          in: query
+          description: Piano's user meter cookie (umc)
+          schema:
+            type: string
+        - name: cross_app
+          in: query
+          description: Whether to include cross application access for the resource
+          schema:
+            type: boolean
+            default: false
+        - name: user_token
+          in: query
+          description: The user token
+          schema:
+            type: string
+        - name: user_provider
+          in: query
+          description: The user token provider
+          schema:
+            type: string
+            enum:
+              - tinypass_go
+              - tinypass_accounts
+              - publisher_user_ref
+              - janrain
+              - conde
+              - gigya
+              - piano_id
+              - piano_id_lite
+        - name: user_ref
+          in: query
+          description: The encrypted user reference
+          schema:
+            type: string
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/AccessDTOResult'
+                  - $ref: '#/components/schemas/GenericErrorResponse'
+  /access/list:
+    get:
+      tags:
+        - Access
+      summary: List user's accesses (anon)
+      description: >-
+        Lists a given user's accesses
+
+
+        On Jan. 31, 2023, the “term” field was removed from the response
+        (user_access(Access)).To get a term, you can still refer to
+        TermConversionDTO.term(Term) in <a
+        href="https://docs.piano.io/api/?endpoint=get~2F~2Fpublisher~2Fconversion~2Flist">/publisher/conversion/list</a>or
+        TermConversion.term(Term) in <a
+        href="https://docs.piano.io/api/?endpoint=get~2F~2Fconversion~2Flist">/conversion/list</a>
+        with AID and UID parameters.
+      operationId: GetAccessList
+      parameters:
+        - name: aid
+          in: query
+          description: The application ID
+          required: true
+          schema:
+            type: string
+        - name: active
+          in: query
+          description: Whether the object is active
+          schema:
+            type: boolean
+            default: true
+        - name: expand_bundled
+          in: query
+          description: Whether to expand bundled accesses in the response
+          schema:
+            type: boolean
+            default: false
+        - name: cross_app
+          in: query
+          description: Whether to include cross application access for the resource
+          schema:
+            type: boolean
+            default: false
+        - name: offset
+          in: query
+          description: Offset from which to start returning results
+          required: true
+          schema:
+            type: integer
+            format: int32
+            default: 0
+        - name: limit
+          in: query
+          description: Maximum index of returned results
+          required: true
+          schema:
+            type: integer
+            format: int32
+            default: 100
+        - name: user_token
+          in: query
+          description: The user token
+          schema:
+            type: string
+        - name: user_provider
+          in: query
+          description: The user token provider
+          schema:
+            type: string
+            enum:
+              - tinypass_go
+              - tinypass_accounts
+              - publisher_user_ref
+              - janrain
+              - conde
+              - gigya
+              - piano_id
+              - piano_id_lite
+        - name: user_ref
+          in: query
+          description: The encrypted user reference
+          schema:
+            type: string
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/AccessDTOArrayResult'
+                  - $ref: '#/components/schemas/GetAccessListError'
+                  - $ref: '#/components/schemas/GenericErrorResponse'
+  /access/token/list:
+    get:
+      tags:
+        - AccessToken
+      summary: List access tokens
+      operationId: GetAccessTokenList
+      parameters:
+        - name: aid
+          in: query
+          description: The application ID
+          required: true
+          schema:
+            type: string
+        - name: url
+          in: query
+          description: The URL of the page
+          schema:
+            type: string
+        - name: user_token
+          in: query
+          description: The user token
+          schema:
+            type: string
+        - name: user_provider
+          in: query
+          description: The user token provider
+          schema:
+            type: string
+            enum:
+              - tinypass_go
+              - tinypass_accounts
+              - publisher_user_ref
+              - janrain
+              - conde
+              - gigya
+              - piano_id
+              - piano_id_lite
+        - name: user_ref
+          in: query
+          description: The encrypted user reference
+          schema:
+            type: string
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/AccessTokenListResult'
+                  - $ref: '#/components/schemas/GetAccessTokenListError'
+                  - $ref: '#/components/schemas/GenericErrorResponse'
+  /anon/assets/clientConfigurations.js:
+    get:
+      tags:
+        - AnonAssets
+      summary: >
+        Get client related configurations (Google Analytics tracking ID,
+
+        Google Analytics Tag for Performance Metrics, Microsoft One-Tap login
+        client_id)
+      operationId: GetAnonAssetsClientConfigurations.js
+      parameters:
+        - name: aid
+          in: query
+          description: The application ID
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/ClientConfigurationsDtoResult'
+                  - $ref: '#/components/schemas/GenericErrorResponse'
+      deprecated: true
+  /anon/assets/gaAccount:
+    get:
+      tags:
+        - AnonAssets
+      summary: Get Google Analytics tracking ID
+      description: >-
+        Returns the <a
+        href="https://docs.piano.io/integrating-with-google-analytics/">Google
+        Analytics</a> tracking ID for a given app: either the ID you have
+        defined in "Edit business" of the dashboard, or Piano's default ID (if
+        enabled in "Edit business").
+      operationId: GetAnonAssetsGaAccount
+      parameters:
+        - name: aid
+          in: query
+          description: The application ID
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/StringResult'
+                  - $ref: '#/components/schemas/GenericErrorResponse'
+      deprecated: true
+  /anon/assets/sdk-runtime-config.js:
+    get:
+      tags:
+        - AnonAssets
+      summary: >
+        Get client related configurations (Google Analytics tracking ID,
+
+        Google Analytics Tag for Performance Metrics, Microsoft One-Tap login
+        client_id)
+      operationId: GetAnonAssetsSdk-runtime-config.js
+      parameters:
+        - name: aid
+          in: query
+          description: The application ID
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/ClientConfigurationsDtoResult'
+                  - $ref: '#/components/schemas/GenericErrorResponse'
+  /anon/country/list/country:
+    get:
+      tags:
+        - AnonCountryList
+      summary: Get list of countries
+      description: Returns a list of available countries.
+      operationId: GetAnonCountryListCountry
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/CountryArrayResult'
+                  - $ref: '#/components/schemas/GenericErrorResponse'
+  /anon/error/log:
+    get:
+      tags:
+        - AnonError
+      summary: Log error to database
+      description: VX frontend calls this endpoint to save an error in VX log.
+      operationId: GetAnonErrorLog
+      parameters:
+        - name: log_message
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Success|OK
+          content: {}
+  /anon/mobile/sdk/id/deployment/host:
+    get:
+      tags:
+        - AnonMobileSdkIdDeployment
+      summary: Get Piano ID deployment host
+      description: >-
+        Returns the <a
+        href="https://docs.piano.io/track/id-implementation?paragraphId=attf-35197">Piano
+        ID deployment host</a> for a given app (supported by Piano ID).
+      operationId: GetAnonMobileSdkIdDeploymentHost
+      parameters:
+        - name: aid
+          in: query
+          description: The application ID
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/StringResult'
+                  - $ref: '#/components/schemas/GetAnonMobileSdkIdDeploymentHostError'
+                  - $ref: '#/components/schemas/GenericErrorResponse'
+  /anon/user/disable/jwt:
+    post:
+      tags:
+        - AnonUserDisable
+      summary: Disable user
+      description: Disable user by jwt.
+      operationId: PostAnonUserDisableJwt
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              required:
+                - aid
+              type: object
+              properties:
+                aid:
+                  type: string
+                  description: The application ID
+        required: true
+      responses:
+        '200':
+          description: Success|OK
+          content: {}
+      x-codegen-request-body-name: body
+  /anon/user/get:
+    post:
+      tags:
+        - AnonUser
+      summary: Get user (anon)
+      description: >-
+        Returns a user based on their user ref or user token (instead of user ID
+        in the app).
+      operationId: PostAnonUserGet
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PostAnonUserGetRequest'
+        required: false
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/UserResult'
+                  - $ref: '#/components/schemas/PostAnonUserGetError'
+                  - $ref: '#/components/schemas/GenericErrorResponse'
+      x-codegen-request-body-name: body
+  /conversion/external/create:
+    post:
+      tags:
+        - ConversionExternal
+      summary: Create external conversion (anon)
+      description: >-
+        Creates an external <a
+        href"https://docs.piano.io/piano-conversions/">conversion</a> (anon)
+      operationId: PostConversionExternalCreate
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PostConversionExternalCreateRequest'
+        required: false
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/TermConversionResult'
+                  - $ref: '#/components/schemas/PostConversionExternalCreateError'
+                  - $ref: '#/components/schemas/GenericErrorResponse'
+      x-codegen-request-body-name: body
+  /conversion/list:
+    get:
+      tags:
+        - Conversion
+      summary: List conversions (anon)
+      description: >-
+        Lists conversions in a given app (optionally, for a given user).
+
+
+        We want to understand how you are using this endpoint. Complete <a
+        href="https://docs.google.com/forms/d/e/1FAIpQLScvxCMttmN1As4XNuJKBgrAAmGQR89H7wY6JkzuYoTiheP2zw/viewform">this
+        form</a> to help us optimize your experience.
+      operationId: GetConversionList
+      parameters:
+        - name: aid
+          in: query
+          description: The application ID
+          required: true
+          schema:
+            type: string
+        - name: user_token
+          in: query
+          description: The user token
+          schema:
+            type: string
+        - name: user_provider
+          in: query
+          description: The user token provider
+          schema:
+            type: string
+            enum:
+              - tinypass_go
+              - tinypass_accounts
+              - publisher_user_ref
+              - janrain
+              - conde
+              - gigya
+              - piano_id
+              - piano_id_lite
+        - name: user_ref
+          in: query
+          description: The encrypted user reference
+          schema:
+            type: string
+        - name: offset
+          in: query
+          description: Offset from which to start returning results
+          required: true
+          schema:
+            type: integer
+            format: int32
+            default: 0
+        - name: limit
+          in: query
+          description: Maximum index of returned results
+          required: true
+          schema:
+            type: integer
+            format: int32
+            default: 100
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/TermConversionArrayResult'
+                  - $ref: '#/components/schemas/GetConversionListError'
+                  - $ref: '#/components/schemas/GenericErrorResponse'
+  /conversion/log:
+    post:
+      tags:
+        - Conversion
+      summary: Log third-party conversion (anon)
+      description: >-
+        This is an alternative method for <a
+        href="https://docs.piano.io/piano-conversions/#alternate">tracking</a>
+        third-party conversions. We do not recommend it because of anonymous API
+        being used, so that conversions can be triggered erroneously. Use of
+        this endpoint must be enabled by your Piano account representative.
+      operationId: PostConversionLog
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PostConversionLogRequest'
+        required: false
+      responses:
+        '200':
+          description: Success|OK
+          content: {}
+      x-codegen-request-body-name: body
+  /conversion/logFunnelStep:
+    post:
+      tags:
+        - Conversion
+      summary: Log funnel stage
+      description: >-
+        Defines an event as a stage of the sales funnel and <a
+        href="https://docs.piano.io/piano-conversions/#logmicro">logs</a> it for
+        analytics or machine learning.
+      operationId: PostConversionLogFunnelStep
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PostConversionLogFunnelStepRequest'
+        required: false
+      responses:
+        '200':
+          description: Success|OK
+          content: {}
+      x-codegen-request-body-name: body
+  /conversion/logMicroConversion:
+    post:
+      tags:
+        - Conversion
+      summary: Log micro conversion
+      description: >-
+        <a href="https://docs.piano.io/piano-conversions/#logmicro">Logs</a> a
+        micro conversion for Composer conversions report.
+      operationId: PostConversionLogMicroConversion
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PostConversionLogMicroConversionRequest'
+        required: false
+      responses:
+        '200':
+          description: Success|OK
+          content: {}
+      x-codegen-request-body-name: body
+  /conversion/registration/create:
+    get:
+      tags:
+        - ConversionRegistration
+      summary: Create registration term conversion
+      description: Creates a registration term conversion
+      operationId: GetConversionRegistrationCreate
+      parameters:
+        - name: aid
+          in: query
+          description: The application ID
+          required: true
+          schema:
+            type: string
+        - name: user_token
+          in: query
+          description: The user token
+          schema:
+            type: string
+        - name: user_provider
+          in: query
+          description: The user token provider
+          schema:
+            type: string
+            enum:
+              - tinypass_go
+              - tinypass_accounts
+              - publisher_user_ref
+              - janrain
+              - conde
+              - gigya
+              - piano_id
+              - piano_id_lite
+        - name: user_ref
+          in: query
+          description: The encrypted user reference
+          schema:
+            type: string
+        - name: term_id
+          in: query
+          description: The term ID
+          required: true
+          schema:
+            type: string
+        - name: tbc
+          in: query
+          description: >-
+            Piano's browser cookie containing the browser ID which can also be
+            retrieved through JS SDK 
+          schema:
+            type: string
+        - name: pageview_id
+          in: query
+          description: The pageview ID, can be retrieved from cookies through JS SDK
+          schema:
+            type: string
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/TermConversionResult'
+                  - $ref: '#/components/schemas/GetConversionRegistrationCreateError'
+                  - $ref: '#/components/schemas/GenericErrorResponse'
+  /email/confirmation/check:
+    get:
+      tags:
+        - EmailConfirmation
+      summary: Check if user has confirmed email address (anon)
+      description: Checks if a user has a confirmed email address (yes or no).
+      operationId: GetEmailConfirmationCheck
+      parameters:
+        - name: aid
+          in: query
+          description: The application ID
+          required: true
+          schema:
+            type: string
+        - name: user_token
+          in: query
+          description: The user token
+          schema:
+            type: string
+        - name: user_provider
+          in: query
+          description: The user token provider
+          schema:
+            type: string
+            enum:
+              - tinypass_go
+              - tinypass_accounts
+              - publisher_user_ref
+              - janrain
+              - conde
+              - gigya
+              - piano_id
+              - piano_id_lite
+        - name: user_ref
+          in: query
+          description: The encrypted user reference
+          schema:
+            type: string
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/BooleanResult'
+                  - $ref: '#/components/schemas/GetEmailConfirmationCheckError'
+                  - $ref: '#/components/schemas/GenericErrorResponse'
+  /exposure/log:
+    post:
+      tags:
+        - Exposure
+      operationId: PostExposureLog
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PostExposureLogRequest'
+        required: false
+      responses:
+        '200':
+          description: Success|OK
+          content: {}
+      x-codegen-request-body-name: body
+  /oauth/authToken:
+    post:
+      tags:
+        - Oauth
+      summary: Get access token for OAuth
+      description: >-
+        Returns an access token to the third-party application that has
+        submitted a given client ID and access credentials (either
+        login+password or code+client secret) as a step of the <a
+        href="https://docs.piano.io/oauth-integration/">OAuth</a> procedure.
+      operationId: PostOauthAuthToken
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PostOauthAuthTokenRequest'
+        required: false
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/OAuthTokenResult'
+                  - $ref: '#/components/schemas/GenericErrorResponse'
+      x-codegen-request-body-name: body
+  /subscription/list:
+    post:
+      tags:
+        - Subscription
+      summary: List user's subscriptions (anon)
+      description: >-
+        Lists the subscriptions of a given user (defined by user_ref or
+        user_token) in a given app.
+      operationId: PostSubscriptionList
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PostSubscriptionListRequest'
+        required: false
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/UserSubscriptionArrayResult'
+                  - $ref: '#/components/schemas/PostSubscriptionListError'
+                  - $ref: '#/components/schemas/GenericErrorResponse'
+      x-codegen-request-body-name: body
+  /swg/sync/external:
+    get:
+      tags:
+        - SwgSync
+      summary: >-
+        List user's external subscriptions by user's access token (for Piano ID
+        users only)
+      description: >-
+        Lists the external subscriptions of a user identified by access token.
+        For Piano ID users only.
+      operationId: GetSwgSyncExternal
+      parameters:
+        - name: aid
+          in: query
+          description: The application ID
+          required: true
+          schema:
+            type: string
+        - name: access_token
+          in: query
+          description: The access token
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/SwgResponseResult'
+                  - $ref: '#/components/schemas/GenericErrorResponse'
+components:
+  schemas:
+    GetConversionListError:
+      type: object
+      required:
+        - code
+      properties:
+        code:
+          type: integer
+          example: 7004, 404, 400
+          description: |+
+            - 7004: Could not find user for uid: %s and email: %s
+
+            - 404: Not found
+
+            - 400: Invalid request parameters
+
+          enum:
+            - 7004
+            - 404
+            - 400
+        message:
+          type: string
+        localizedMessage:
+          type: string
+    GetEmailConfirmationCheckError:
+      type: object
+      required:
+        - code
+      properties:
+        code:
+          type: integer
+          example: '7004'
+          description: |+
+            - 7004: Could not find user for uid: %s and email: %s
+
+          enum:
+            - 7004
+        message:
+          type: string
+        localizedMessage:
+          type: string
+    PostConversionLogError:
+      type: object
+      required:
+        - code
+      properties:
+        code:
+          type: integer
+          example: default, 2, 402, 1161
+          description: |+
+            - default: successful operation
+
+            - 2: Access denied
+
+            - 402: Invalid aid
+
+            - 1161: Conversion category not found: '%s'
+
+          enum:
+            - 200
+            - 2
+            - 402
+            - 1161
+        message:
+          type: string
+        localizedMessage:
+          type: string
+    GetConversionRegistrationCreateError:
+      type: object
+      required:
+        - code
+      properties:
+        code:
+          type: integer
+          example: 404, 1002, 1009, 1010, 1008
+          description: |+
+            - 1008: Conversion rejected by grace period
+
+            - 1002: Invalid term type
+
+            - 1010: Already registered on this site
+
+            - 1009: Already have access to this resource
+
+            - 404: Not found
+
+          enum:
+            - 1009
+            - 404
+            - 1002
+            - 1008
+            - 1010
+        message:
+          type: string
+        localizedMessage:
+          type: string
+    GetAnonMobileSdkIdDeploymentHostError:
+      type: object
+      required:
+        - code
+      properties:
+        code:
+          type: integer
+          example: '40000'
+          description: |+
+            - 40000: Couldn't get deployment host
+
+          enum:
+            - 40000
+        message:
+          type: string
+        localizedMessage:
+          type: string
+    GetAnonErrorLogError:
+      type: object
+      required:
+        - code
+      properties:
+        code:
+          type: integer
+          example: default
+          description: |+
+            - default: successful operation
+
+          enum:
+            - 200
+        message:
+          type: string
+        localizedMessage:
+          type: string
+    PostConversionLogFunnelStepError:
+      type: object
+      required:
+        - code
+      properties:
+        code:
+          type: integer
+          example: default, 402
+          description: |+
+            - default: successful operation
+
+            - 402: Invalid aid
+
+          enum:
+            - 200
+            - 402
+        message:
+          type: string
+        localizedMessage:
+          type: string
+    PostSubscriptionListError:
+      type: object
+      required:
+        - code
+      properties:
+        code:
+          type: integer
+          example: 2, 2004
+          description: |+
+            - 2: Access denied
+
+            - 2004: User not found
+
+          enum:
+            - 2
+            - 2004
+        message:
+          type: string
+        localizedMessage:
+          type: string
+    GetAccessListError:
+      type: object
+      required:
+        - code
+      properties:
+        code:
+          type: integer
+          example: 7004, 1, 2004
+          description: |+
+            - 7004: Could not find user for uid: %s and email: %s
+
+            - 1: Internal error
+
+            - 2004: User not found
+
+          enum:
+            - 7004
+            - 1
+            - 2004
+        message:
+          type: string
+        localizedMessage:
+          type: string
+    GetAccessTokenListError:
+      type: object
+      required:
+        - code
+      properties:
+        code:
+          type: integer
+          example: 7004, 2004
+          description: |+
+            - 7004: Could not find user for uid: %s and email: %s
+
+            - 2004: User not found
+
+          enum:
+            - 7004
+            - 2004
+        message:
+          type: string
+        localizedMessage:
+          type: string
+    PostAnonUserDisableJwtError:
+      type: object
+      required:
+        - code
+      properties:
+        code:
+          type: integer
+          example: default, 2
+          description: |+
+            - default: successful operation
+
+            - 2: Access denied
+
+          enum:
+            - 200
+            - 2
+        message:
+          type: string
+        localizedMessage:
+          type: string
+    PostExposureLogError:
+      type: object
+      required:
+        - code
+      properties:
+        code:
+          type: integer
+          example: default
+          description: |+
+            - default: successful operation
+
+          enum:
+            - 200
+        message:
+          type: string
+        localizedMessage:
+          type: string
+    PostAnonUserGetError:
+      type: object
+      required:
+        - code
+      properties:
+        code:
+          type: integer
+          example: '2004'
+          description: |+
+            - 2004: User not found
+
+          enum:
+            - 2004
+        message:
+          type: string
+        localizedMessage:
+          type: string
+    PostConversionExternalCreateError:
+      type: object
+      required:
+        - code
+      properties:
+        code:
+          type: integer
+          example: 10001, 1002, 7004, 401, 404, 1003, 1001
+          description: |+
+            - 1002: Invalid term type
+
+            - 7004: Could not find user for uid: %s and email: %s
+
+            - 401: Invalid user
+
+            - 404: Not found
+
+            - 1003: Access period must be greater than or equal to 0
+
+            - 10001: Can't parse fields
+
+            - 1001: Term not found
+
+          enum:
+            - 404
+            - 1001
+            - 10001
+            - 1002
+            - 7004
+            - 401
+            - 1003
+        message:
+          type: string
+        localizedMessage:
+          type: string
+    PostConversionLogMicroConversionError:
+      type: object
+      required:
+        - code
+      properties:
+        code:
+          type: integer
+          example: default, 402
+          description: |+
+            - default: successful operation
+
+            - 402: Invalid aid
+
+          enum:
+            - 200
+            - 402
+        message:
+          type: string
+        localizedMessage:
+          type: string
+    Access:
+      required:
+        - access_id
+        - can_revoke_access
+        - expire_date
+        - granted
+        - parent_access_id
+        - resource
+        - start_date
+        - user
+      type: object
+      properties:
+        access_id:
+          type: string
+          description: The access ID
+        parent_access_id:
+          type: string
+          description: The parent access ID (for accesses to bundled resources)
+        granted:
+          type: boolean
+          description: Whether the access is granted
+        user:
+          $ref: '#/components/schemas/User'
+        resource:
+          $ref: '#/components/schemas/Resource'
+        expire_date:
+          type: integer
+          description: The expire date of the access item; null means unlimited
+          format: timestamp
+        start_date:
+          type: integer
+          description: The start date.
+          format: timestamp
+        can_revoke_access:
+          type: boolean
+          description: Whether the access can be revoked ("true" or "false")
+      x-use-dates: true
+    AccessDTO:
+      required:
+        - access_id
+        - can_revoke_access
+        - custom_data
+        - expire_date
+        - granted
+        - parent_access_id
+        - resource
+        - start_date
+        - user
+      type: object
+      properties:
+        access_id:
+          type: string
+          description: The access ID
+        parent_access_id:
+          type: string
+          description: The parent access ID (for accesses to bundled resources)
+        granted:
+          type: boolean
+          description: Granted == true if the user has access
+        user:
+          $ref: '#/components/schemas/UserDto'
+        resource:
+          $ref: '#/components/schemas/ResourceDto'
+        expire_date:
+          type: integer
+          description: The expire date of the access item; null means unlimited
+          format: timestamp
+        start_date:
+          type: integer
+          description: The start date.
+          format: timestamp
+        can_revoke_access:
+          type: boolean
+          description: Whether the access can be revoked ("true" or "false")
+        custom_data:
+          type: string
+          description: Custom data
+      x-use-dates: true
+    AccessTokenList:
+      required:
+        - cookie_domain
+        - value
+      type: object
+      properties:
+        value:
+          type: string
+          description: The encoded access token list value
+        cookie_domain:
+          type: string
+          description: The domain to set the cookie on
+    BillingPlanTranslationRequest:
+      required:
+        - billing_plan
+        - end_date
+        - start_date
+        - subscription_last_payment
+        - term_pub_id
+      type: object
+      properties:
+        billing_plan:
+          type: string
+          description: The billing plan of the subscription
+        subscription_last_payment:
+          type: integer
+          description: The date of the last payment for the subscription
+          format: timestamp
+        start_date:
+          type: integer
+          description: The start date.
+          format: timestamp
+        end_date:
+          type: integer
+          description: The end date
+          format: timestamp
+        term_pub_id:
+          type: string
+          description: The public ID of the term
+    CheckSubscriptionResponse:
+      required:
+        - term_id
+        - type
+        - user_token
+      type: object
+      properties:
+        type:
+          type: string
+          description: Type
+        user_token:
+          type: string
+          description: User token
+        term_id:
+          type: string
+          description: Term id
+    ClientConfigurationsDto:
+      required:
+        - ga_account
+        - is_performance_metrics_enabled
+        - msqa_client_id
+        - performance_metrics_ga_account
+        - performance_metrics_track_only_aids
+      type: object
+      properties:
+        ga_account:
+          type: string
+          description: GA Account
+        is_performance_metrics_enabled:
+          type: string
+          description: Is Performance Metrics enabled
+        performance_metrics_ga_account:
+          type: string
+          description: Performance Metrics GA Account
+        performance_metrics_track_only_aids:
+          type: string
+          description: Performance Metrics Track Only AIDs
+        msqa_client_id:
+          type: string
+          description: MSQA Client ID
+    ConsentModel:
+      required:
+        - checked
+        - consent_pub_id
+        - display_text
+        - field_id
+        - field_name
+        - sort_order
+      type: object
+      properties:
+        consent_pub_id:
+          type: string
+          description: The displayed text of the consent box
+        display_text:
+          type: string
+          description: The displayed text of the consent box
+        field_name:
+          type: string
+          description: The name of the consent box field
+        field_id:
+          type: string
+          description: The ID of the consent box field
+        sort_order:
+          type: string
+          description: Consent sort order
+        checked:
+          type: string
+          description: Whether the consent box is checked
+    Country:
+      required:
+        - country_code
+        - country_id
+        - country_name
+        - regions
+      type: object
+      properties:
+        country_name:
+          type: string
+          description: The country name
+        country_code:
+          type: string
+          description: The country code
+        country_id:
+          type: string
+          description: The country ID
+        regions:
+          type: array
+          items:
+            $ref: '#/components/schemas/Region'
+    Currency:
+      required:
+        - currency_code
+        - currency_symbol
+      type: object
+      properties:
+        currency_code:
+          type: string
+          description: The currency code under ISO 4217
+        currency_symbol:
+          type: string
+          description: The currency symbol
+    DatatransApplePayConfig:
+      required:
+        - url
+      type: object
+      properties:
+        url:
+          type: string
+          description: The URL of the page
+    ExternalCss:
+      required:
+        - external_css_id
+        - position
+        - status
+        - title
+        - url
+      type: object
+      properties:
+        title:
+          type: string
+          description: The title
+        url:
+          type: string
+          description: The URL of the page
+        status:
+          type: string
+          description: >-
+            The status of the external CSS of the template("active" or
+            "inactive")
+          enum:
+            - active
+            - inactive
+        position:
+          type: integer
+          description: The position
+          format: int32
+        external_css_id:
+          type: string
+          description: The external CSS ID
+    KeySource:
+      required:
+        - key
+        - key_sources
+      type: object
+      properties:
+        key:
+          type: string
+          description: Message key
+        key_sources:
+          type: array
+          items:
+            $ref: '#/components/schemas/Source'
+    LightOfferTemplateVersion:
+      required:
+        - content1_type
+        - content1_value
+        - content2_type
+        - content2_value
+        - content3_type
+        - content3_value
+        - external_css_list
+        - is_offer_template_archived
+        - is_template_variant_archived
+        - offer_template_id
+        - template_id
+        - template_version_id
+        - token_type
+        - type
+        - version
+      type: object
+      properties:
+        offer_template_id:
+          type: string
+          description: The template ID
+        token_type:
+          type: string
+          description: Is template token type
+        version:
+          type: integer
+          description: The version
+          format: int32
+        type:
+          type: string
+          description: 'The type '
+        content1_type:
+          type: string
+          description: HTML
+        content2_type:
+          type: string
+          description: CSS
+        content3_type:
+          type: string
+          description: JS/JSON
+        content1_value:
+          type: string
+          description: The content1 value
+        content2_value:
+          type: string
+          description: The content2 value
+        content3_value:
+          type: string
+          description: The content3 value
+        template_id:
+          type: string
+          description: The template ID
+        template_version_id:
+          type: string
+          description: The template version ID
+        is_offer_template_archived:
+          type: boolean
+          description: Whether the template is archived
+        is_template_variant_archived:
+          type: boolean
+          description: Whether the template variant is archived
+        external_css_list:
+          type: array
+          items:
+            $ref: '#/components/schemas/ExternalCss'
+    LinkedTermCheckoutTrackParams:
+      required:
+        - aid
+        - browser_id
+        - checkout_start_date
+        - external_term_id
+      type: object
+      properties:
+        aid:
+          type: string
+          description: The application ID
+        browser_id:
+          type: string
+          description: The unique browser ID
+        external_term_id:
+          type: string
+          description: >-
+            The ID of the term in the external system. Provided by the external
+            system.
+        checkout_start_date:
+          type: integer
+          description: The Unix timestamp of when user started an external checkout
+          format: int64
+    LinkedTermEventPageViewContent:
+      type: object
+      properties:
+        contentCreated:
+          type: string
+        contentAuthor:
+          type: string
+        contentSection:
+          type: string
+        contentType:
+          type: string
+        tags:
+          type: array
+          items:
+            type: string
+    LinkedTermEventSession:
+      type: object
+      properties:
+        trackingId:
+          type: string
+        tbc:
+          type: string
+        pcid:
+          type: string
+        offer:
+          $ref: '#/components/schemas/LinkedTermEventSessionOffer'
+        pageViewId:
+          type: string
+        pageViewContent:
+          $ref: '#/components/schemas/LinkedTermEventPageViewContent'
+        userAgent:
+          type: string
+        consents:
+          type: string
+        previousUserSegments:
+          type: string
+        userState:
+          type: string
+          enum:
+            - na
+            - anon
+            - registered
+            - hasActiveAccess
+    LinkedTermEventSessionOffer:
+      type: object
+      properties:
+        offerId:
+          type: string
+        offerTemplateId:
+          type: string
+        offerTemplateVersionId:
+          type: string
+    LinkedTermPageViewContentParams:
+      type: object
+      properties:
+        content_created:
+          type: string
+          description: When the content was published
+        content_author:
+          type: string
+          description: The author of the content
+        content_section:
+          type: string
+          description: The section for the content
+        content_type:
+          type: string
+          description: The type of the content
+        tags:
+          type: array
+          description: The tags of the page
+          items:
+            type: string
+    LinkedTermSessionParams:
+      type: object
+      properties:
+        tracking_id:
+          type: string
+          description: The User's tracking id
+        tbc:
+          type: string
+          description: The User's tbc
+        pcid:
+          type: string
+          description: The User's pcid
+        offer_id:
+          type: string
+          description: The offer ID
+        offer_template_id:
+          type: string
+          description: The template ID
+        offer_template_version_id:
+          type: string
+          description: The ID of the template version ID
+        page_view_id:
+          type: string
+          description: The pageview ID, can be retrieved from cookies through JS SDK
+        page_view_content:
+          $ref: '#/components/schemas/LinkedTermPageViewContentParams'
+        consents:
+          type: string
+          description: The conversion consents in JSON format
+        previous_user_segments:
+          type: string
+          description: Previous C1X user segments
+        user_state:
+          type: string
+          description: User state
+    LocaleModel:
+      required:
+        - is_default
+        - is_enabled
+        - is_rtl
+        - label
+        - locale
+        - localized_label
+      type: object
+      properties:
+        locale:
+          type: string
+          description: Locale
+        label:
+          type: string
+          description: Label
+        localized_label:
+          type: string
+          description: Localized label
+        is_default:
+          type: boolean
+          description: Is default locale
+        is_enabled:
+          type: boolean
+          description: Is enabled
+        is_rtl:
+          type: boolean
+          description: Is RTL
+    OAuthToken:
+      required:
+        - access_token
+        - expires_in
+        - refresh_token
+        - token_type
+      type: object
+      properties:
+        access_token:
+          type: string
+          description: access_token
+        expires_in:
+          type: integer
+          description: expires_in
+          format: int32
+        refresh_token:
+          type: string
+          description: refresh_token
+        token_type:
+          type: string
+          description: token_type
+          enum:
+            - BEARER
+    PasswordlessPurchaseCheckResult:
+      required:
+        - poll_status
+        - resource
+        - show_offer_params
+        - type
+      type: object
+      properties:
+        poll_status:
+          type: string
+          description: Polling status
+        resource:
+          $ref: '#/components/schemas/Resource'
+        show_offer_params:
+          type: string
+          description: >-
+            Parameters to show offer for continue payment flow after
+            confirmation
+        type:
+          type: string
+          description: The term type
+    PasswordlessPurchaseCompleteResult:
+      required:
+        - oid
+        - polling_enabled
+        - polling_timeouts
+        - process_id
+        - resource
+        - show_offer_params
+        - type
+        - url
+      type: object
+      properties:
+        oid:
+          type: string
+          description: The order ID
+        url:
+          type: string
+          description: The URL of the page
+        resource:
+          $ref: '#/components/schemas/Resource'
+        show_offer_params:
+          type: string
+          description: >-
+            Parameters to show offer for continue payment flow after
+            confirmation
+        type:
+          type: string
+          description: The term type
+        process_id:
+          type: string
+          description: Process ID
+        polling_enabled:
+          type: boolean
+          description: Is polling enabled
+        polling_timeouts:
+          type: array
+          items:
+            type: integer
+            format: int32
+    PerformanceMetricsDto:
+      required:
+        - ga_account
+        - is_enabled
+        - track_only_aids
+      type: object
+      properties:
+        ga_account:
+          type: string
+          description: GA Account
+        is_enabled:
+          type: string
+          description: Is GA enabled
+        track_only_aids:
+          type: string
+          description: Track only aids
+    PublicCaptchaConfig:
+      required:
+        - aid
+        - captcha3_site_key
+        - enabled
+      type: object
+      properties:
+        aid:
+          type: string
+          description: The application ID
+        enabled:
+          type: boolean
+          description: Whether the property is enabled
+        captcha3_site_key:
+          type: string
+          description: reCAPTCHA v3 site key
+    Region:
+      required:
+        - region_code
+        - region_id
+        - region_name
+      type: object
+      properties:
+        region_name:
+          type: string
+          description: The name of the country region
+        region_code:
+          type: string
+          description: The code of the country region
+        region_id:
+          type: string
+          description: The ID of the country region
+    Resource:
+      required:
+        - aid
+        - description
+        - image_url
+        - name
+        - rid
+      type: object
+      properties:
+        rid:
+          type: string
+          description: The resource ID
+          example: rid_example
+        aid:
+          type: string
+          description: The application ID
+        name:
+          type: string
+          description: The name
+        description:
+          type: string
+          description: The resource description
+        image_url:
+          type: string
+          description: The URL of the resource image
+    ResourceDto:
+      required:
+        - aid
+        - description
+        - image_url
+        - name
+        - rid
+      type: object
+      properties:
+        rid:
+          type: string
+          description: The resource ID
+        aid:
+          type: string
+          description: The application ID
+        name:
+          type: string
+          description: The name
+        description:
+          type: string
+          description: The resource description
+        image_url:
+          type: string
+          description: The URL of the resource image
+    Source:
+      required:
+        - source_names
+        - type
+      type: object
+      properties:
+        type:
+          type: string
+          description: Message context
+        source_names:
+          type: array
+          items:
+            type: string
+    SwgResponse:
+      required:
+        - detail
+        - products
+        - subscriptionToken
+      type: object
+      properties:
+        subscriptionToken:
+          type: string
+          description: The subscription token
+        detail:
+          type: string
+          description: Detail
+        products:
+          type: array
+          items:
+            type: string
+    TemplateContext:
+      required:
+        - experience_action_id
+        - experience_execution_id
+        - experience_id
+        - template_language
+        - user_info
+      type: object
+      properties:
+        user_info:
+          $ref: '#/components/schemas/UserInfo'
+        experience_id:
+          type: string
+          description: The experience ID
+        experience_action_id:
+          type: string
+          description: The experience action ID
+        experience_execution_id:
+          type: string
+          description: The experience execution ID
+        template_language:
+          type: string
+          description: The resolved template language
+    Term:
+      required:
+        - aid
+        - create_date
+        - description
+        - name
+        - resource
+        - term_id
+        - type
+      type: object
+      properties:
+        term_id:
+          type: string
+          description: The term ID
+          example: term_example
+        aid:
+          type: string
+          description: The application ID
+        resource:
+          $ref: '#/components/schemas/Resource'
+        type:
+          type: string
+          description: The term type
+          enum:
+            - payment
+            - adview
+            - registration
+            - newsletter
+            - external
+            - custom
+            - grant_access
+            - gift
+            - specific_email_addresses_contract
+            - email_domain_contract
+            - ip_range_contract
+            - dynamic
+            - linked
+        name:
+          type: string
+          description: The term name
+        description:
+          type: string
+          description: The description of the term
+        create_date:
+          type: integer
+          description: The creation date
+          format: timestamp
+    TermConversion:
+      required:
+        - aid
+        - create_date
+        - term
+        - term_conversion_id
+        - type
+        - user_access
+      type: object
+      properties:
+        term_conversion_id:
+          type: string
+          description: The term conversion ID
+        term:
+          $ref: '#/components/schemas/Term'
+        type:
+          type: string
+          description: The term conversion type
+          enum:
+            - Unknown
+            - Payment
+            - Subscription
+            - Renewal
+            - Grant access
+            - Gift received
+            - Gift purchased
+            - Registration
+            - Adview
+            - Custom
+            - External
+            - Free promo redemption
+            - External renewal
+            - Provisional
+            - Free renewal
+            - Bill
+            - Upgrade term
+            - Term conversion to wait Instant Payment Notification
+            - Licensee contract redemption
+            - Licensee contract renewal
+            - Shared subscription child grand access
+            - Shared subscription child renew
+            - Upgrade term with grace period
+            - Dynamic term purchase
+            - Dynamic subscription internal renewal
+            - Dynamic subscription external renewal
+            - Link
+            - Upgrade to dynamic term
+            - Upgrade to dynamic term with grace period
+            - Payment subscription renewal with grace period
+            - Dynamic subscription internal renewal with grace period
+            - Dynamic subscription external renewal with grace period
+            - >-
+              The dynamic subscription has been created as the result of the
+              import
+            - Subscription deferred start
+            - Dynamic term deferred purchase
+            - Deferred payment subscription activation
+            - Deferred dynamic subscription activation
+        aid:
+          type: string
+          description: The application ID
+        user_access:
+          $ref: '#/components/schemas/Access'
+        create_date:
+          type: integer
+          description: The creation date
+          format: timestamp
+    User:
+      required:
+        - create_date
+        - email
+        - first_name
+        - last_name
+        - personal_name
+        - uid
+      type: object
+      properties:
+        uid:
+          type: string
+          description: The user's ID
+        email:
+          type: string
+          description: The user's email address (single)
+        first_name:
+          type: string
+          description: The user's first name
+        last_name:
+          type: string
+          description: The user's last name
+        personal_name:
+          type: string
+          description: The user's personal name. Name and surname ordered as per locale
+        create_date:
+          type: integer
+          description: The user creation date
+          format: timestamp
+    UserAudit:
+      required:
+        - action_type
+        - aid
+        - uid
+      type: object
+      properties:
+        uid:
+          type: string
+          description: uid
+        action_type:
+          type: string
+          description: 'An audit action type, such as: login, profile update, password reset'
+        aid:
+          type: string
+          description: The application ID
+    UserDto:
+      required:
+        - create_date
+        - email
+        - first_name
+        - last_name
+        - personal_name
+        - uid
+      type: object
+      properties:
+        uid:
+          type: string
+          description: The user's ID
+        email:
+          type: string
+          description: The user's email address (single)
+        first_name:
+          type: string
+          description: The user's first name
+        last_name:
+          type: string
+          description: The user's last name
+        personal_name:
+          type: string
+          description: The user's personal name. Name and surname ordered as per locale
+        create_date:
+          type: integer
+          description: The user creation date
+          format: timestamp
+    UserInfo:
+      required:
+        - country_code
+        - is_new_customer
+        - postal_code
+        - tax_support
+        - user
+        - user_lang
+      type: object
+      properties:
+        user_lang:
+          type: string
+          description: The user's language
+        is_new_customer:
+          type: boolean
+          description: Whether the user is a new customer
+        user:
+          $ref: '#/components/schemas/UserModel'
+        country_code:
+          type: string
+          description: The country code
+        postal_code:
+          type: string
+          description: The user's postal code
+        tax_support:
+          type: string
+          description: Caption of tax support
+    UserModel:
+      required:
+        - email
+        - first_name
+        - last_name
+        - uid
+        - valid
+      type: object
+      properties:
+        uid:
+          type: string
+          description: The user's ID
+        first_name:
+          type: string
+          description: The user's first name
+        last_name:
+          type: string
+          description: The user's last name
+        email:
+          type: string
+          description: The user's email address (single)
+        valid:
+          type: boolean
+          description: valid
+    UserSubscription:
+      required:
+        - access_custom_data
+        - auto_renew
+        - cancelable
+        - cancelable_and_refundadle
+        - create_date
+        - external_sub_id
+        - grace_period_start_date
+        - next_bill_date
+        - payment_billing_plan_description
+        - start_date
+        - status
+        - subscription_id
+        - term
+      type: object
+      properties:
+        subscription_id:
+          type: string
+          description: The user subscription ID
+        term:
+          $ref: '#/components/schemas/Term'
+        auto_renew:
+          type: boolean
+          description: Whether auto renewal is enabled for the subscription
+        grace_period_start_date:
+          type: integer
+          description: The grace period start date
+          format: timestamp
+        next_bill_date:
+          type: integer
+          description: The next bill date of the subscription
+          format: timestamp
+        start_date:
+          type: integer
+          description: The start date.
+          format: timestamp
+        create_date:
+          type: integer
+          description: The creation date
+          format: timestamp
+        status:
+          type: string
+          description: The subscription status
+          enum:
+            - active
+            - cancelled
+            - fail_and_retry
+            - expired_with_error
+            - expired
+            - completed
+            - deleted
+            - wait_confirmed
+            - upgraded
+            - pending
+            - not_started
+        cancelable:
+          type: boolean
+          description: >-
+            Whether this subscription can be cancelled; cancelling means thatthe
+            access will not be prolonged and the current access will be revoked
+        cancelable_and_refundadle:
+          type: boolean
+          description: >-
+            Whether the subscription can be cancelled with the payment for the
+            last period refunded. Cancelling means that the access will not be
+            prolonged and the current access will be revoked
+        payment_billing_plan_description:
+          type: string
+          description: The description of the term billing plan
+        external_sub_id:
+          type: string
+          description: The ID of the external subscription linked with subscription.
+        access_custom_data:
+          type: string
+          description: Access custom data associated with linked term subscription
+    AccessDTOResult:
+      required:
+        - AccessDTO
+      type: object
+      properties:
+        AccessDTO:
+          $ref: '#/components/schemas/AccessDTO'
+      additionalProperties: false
+    AccessDTOArrayResult:
+      required:
+        - AccessDTO
+      type: object
+      properties:
+        AccessDTO:
+          type: array
+          items:
+            $ref: '#/components/schemas/AccessDTO'
+      additionalProperties: false
+    AccessTokenListResult:
+      required:
+        - AccessTokenList
+      type: object
+      properties:
+        AccessTokenList:
+          $ref: '#/components/schemas/AccessTokenList'
+      additionalProperties: false
+    ClientConfigurationsDtoResult:
+      required:
+        - ClientConfigurationsDto
+      type: object
+      properties:
+        ClientConfigurationsDto:
+          $ref: '#/components/schemas/ClientConfigurationsDto'
+      additionalProperties: false
+    StringResult:
+      required:
+        - data
+      type: object
+      properties:
+        data:
+          type: string
+      additionalProperties: false
+    CountryArrayResult:
+      required:
+        - Country
+      type: object
+      properties:
+        Country:
+          type: array
+          items:
+            $ref: '#/components/schemas/Country'
+      additionalProperties: false
+    UserResult:
+      required:
+        - User
+      type: object
+      properties:
+        User:
+          $ref: '#/components/schemas/User'
+      additionalProperties: false
+    TermConversionResult:
+      required:
+        - TermConversion
+      type: object
+      properties:
+        TermConversion:
+          $ref: '#/components/schemas/TermConversion'
+      additionalProperties: false
+    TermConversionArrayResult:
+      required:
+        - TermConversion
+      type: object
+      properties:
+        TermConversion:
+          type: array
+          items:
+            $ref: '#/components/schemas/TermConversion'
+      additionalProperties: false
+    BooleanResult:
+      required:
+        - data
+      type: object
+      properties:
+        data:
+          type: boolean
+      additionalProperties: false
+    OAuthTokenResult:
+      required:
+        - OAuthToken
+      type: object
+      properties:
+        OAuthToken:
+          $ref: '#/components/schemas/OAuthToken'
+      additionalProperties: false
+    UserSubscriptionArrayResult:
+      required:
+        - UserSubscription
+      type: object
+      properties:
+        UserSubscription:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserSubscription'
+      additionalProperties: false
+    SwgResponseResult:
+      required:
+        - SwgResponse
+      type: object
+      properties:
+        SwgResponse:
+          $ref: '#/components/schemas/SwgResponse'
+      additionalProperties: false
+    PostAnonUserGetRequest:
+      required:
+        - aid
+      type: object
+      properties:
+        aid:
+          type: string
+          description: The application ID
+        user_token:
+          type: string
+          description: The user token
+        user_provider:
+          type: string
+          description: The user token provider
+          enum:
+            - tinypass_go
+            - tinypass_accounts
+            - publisher_user_ref
+            - janrain
+            - conde
+            - gigya
+            - piano_id
+            - piano_id_lite
+        user_ref:
+          type: string
+          description: The encrypted user reference
+      additionalProperties: false
+    PostConversionExternalCreateRequest:
+      required:
+        - aid
+        - fields
+        - term_id
+      type: object
+      properties:
+        aid:
+          type: string
+          description: The application ID
+        term_id:
+          type: string
+          description: The term ID
+        fields:
+          type: string
+          description: >-
+            A JSON object defining what fields have to be checked with the
+            external API
+        user_token:
+          type: string
+          description: The user token
+        user_provider:
+          type: string
+          description: The user token provider
+          enum:
+            - tinypass_go
+            - tinypass_accounts
+            - publisher_user_ref
+            - janrain
+            - conde
+            - gigya
+            - piano_id
+            - piano_id_lite
+        user_ref:
+          type: string
+          description: The encrypted user reference
+        tracking_id:
+          type: string
+          description: The conversion ID to track in external systems
+        custom_params:
+          type: string
+          description: >-
+            The custom parameters (any key-value pairs) to save; the value
+            should be a valid JSON object)
+        browser_id:
+          type: string
+          description: The unique browser ID
+        page_title:
+          type: string
+          description: Page title
+        url:
+          type: string
+          description: The URL of the page
+        referer:
+          type: string
+          description: The page referer
+        content_author:
+          type: string
+          description: The author of the content
+        content_created:
+          type: string
+          description: When the content was published
+        content_section:
+          type: string
+          description: The section for the content
+        content_type:
+          type: string
+          description: The type of the content
+        tags:
+          type: string
+          description: Comma-separated list of The tags of the page
+          format: csv
+        previous_user_segments:
+          type: string
+          description: Previous C1X user segments
+        user_state:
+          type: string
+          description: User state
+          enum:
+            - na
+            - anon
+            - registered
+            - hasactiveaccess
+        cookie_consents:
+          type: string
+          description: The conversion consents in JSON format
+      additionalProperties: false
+    PostConversionLogRequest:
+      required:
+        - term_id
+        - term_name
+        - tracking_id
+      type: object
+      properties:
+        tracking_id:
+          type: string
+          description: The conversion ID to track in external systems
+        term_id:
+          type: string
+          description: The term ID
+        term_name:
+          type: string
+          description: The term name
+        step_number:
+          type: integer
+          description: The step of the external checkout as defined by the client
+          format: int32
+        conversion_category:
+          type: string
+          description: The conversion category
+          enum:
+            - uncategorized
+            - payment
+            - subscription
+            - grant_access
+            - gift_received
+            - gift_purchased
+            - registration
+            - adview
+            - custom
+            - external
+            - free_promo_redemption
+            - adblock_disabled
+            - micro_conversion_link
+            - micro_conversion_event
+            - newsletter
+        amount:
+          type: number
+          description: The conversion amount
+        currency:
+          type: string
+          description: The conversion currency under the ISO 4217 standard
+        custom_params:
+          type: string
+          description: >-
+            The custom parameters (any key-value pairs) to save; the value
+            should be a valid JSON object)
+        browser_id:
+          type: string
+          description: The unique browser ID
+        page_title:
+          type: string
+          description: Page title
+        url:
+          type: string
+          description: The URL of the page
+        referer:
+          type: string
+          description: The page referer
+        content_author:
+          type: string
+          description: The author of the content
+        content_created:
+          type: string
+          description: When the content was published
+        content_section:
+          type: string
+          description: The section for the content
+        content_type:
+          type: string
+          description: The type of the content
+        tags:
+          type: string
+          description: Comma-separated list of The tags of the page
+          format: csv
+        previous_user_segments:
+          type: string
+          description: Previous C1X user segments
+        user_state:
+          type: string
+          description: User state
+          enum:
+            - na
+            - anon
+            - registered
+            - hasactiveaccess
+        cookie_consents:
+          type: string
+          description: The conversion consents in JSON format
+      additionalProperties: false
+    PostConversionLogFunnelStepRequest:
+      required:
+        - step_name
+        - step_number
+        - tracking_id
+      type: object
+      properties:
+        tracking_id:
+          type: string
+          description: The conversion ID to track in external systems
+        step_number:
+          type: integer
+          description: The step of the external checkout as defined by the client
+          format: int32
+        step_name:
+          type: string
+          description: The name of the checkout step
+        custom_params:
+          type: string
+          description: >-
+            The custom parameters (any key-value pairs) to save; the value
+            should be a valid JSON object)
+        browser_id:
+          type: string
+          description: The unique browser ID
+        page_title:
+          type: string
+          description: Page title
+        url:
+          type: string
+          description: The URL of the page
+        referer:
+          type: string
+          description: The page referer
+        content_author:
+          type: string
+          description: The author of the content
+        content_created:
+          type: string
+          description: When the content was published
+        content_section:
+          type: string
+          description: The section for the content
+        content_type:
+          type: string
+          description: The type of the content
+        tags:
+          type: string
+          description: Comma-separated list of The tags of the page
+          format: csv
+        previous_user_segments:
+          type: string
+          description: Previous C1X user segments
+        user_state:
+          type: string
+          description: User state
+          enum:
+            - na
+            - anon
+            - registered
+            - hasactiveaccess
+        cookie_consents:
+          type: string
+          description: The conversion consents in JSON format
+      additionalProperties: false
+    PostConversionLogMicroConversionRequest:
+      required:
+        - event_group_id
+        - tracking_id
+      type: object
+      properties:
+        tracking_id:
+          type: string
+          description: The conversion ID to track in external systems
+        event_group_id:
+          type: string
+          description: The conversion event group ID
+        custom_params:
+          type: string
+          description: >-
+            The custom parameters (any key-value pairs) to save; the value
+            should be a valid JSON object)
+        browser_id:
+          type: string
+          description: The unique browser ID
+        page_title:
+          type: string
+          description: Page title
+        url:
+          type: string
+          description: The URL of the page
+        referer:
+          type: string
+          description: The page referer
+        content_author:
+          type: string
+          description: The author of the content
+        content_created:
+          type: string
+          description: When the content was published
+        content_section:
+          type: string
+          description: The section for the content
+        content_type:
+          type: string
+          description: The type of the content
+        tags:
+          type: string
+          description: Comma-separated list of The tags of the page
+          format: csv
+        previous_user_segments:
+          type: string
+          description: Previous C1X user segments
+        user_state:
+          type: string
+          description: User state
+          enum:
+            - na
+            - anon
+            - registered
+            - hasactiveaccess
+        cookie_consents:
+          type: string
+          description: The conversion consents in JSON format
+      additionalProperties: false
+    PostExposureLogRequest:
+      required:
+        - aid
+        - browser_id
+        - tracking_id
+      type: object
+      properties:
+        aid:
+          type: string
+          description: The application ID
+        tracking_id:
+          type: string
+          description: The conversion ID to track in external systems
+        browser_id:
+          type: string
+          description: The unique browser ID
+        user_token:
+          type: string
+          description: The user token
+        page_title:
+          type: string
+          description: Page title
+        url:
+          type: string
+          description: The URL of the page
+        referer:
+          type: string
+          description: The page referer
+        content_author:
+          type: string
+          description: The author of the content
+        content_created:
+          type: string
+          description: When the content was published
+        content_section:
+          type: string
+          description: The section for the content
+        content_type:
+          type: string
+          description: The type of the content
+        tags:
+          type: string
+          description: Comma-separated list of The tags of the page
+          format: csv
+        previous_user_segments:
+          type: string
+          description: Previous C1X user segments
+        user_state:
+          type: string
+          description: User state
+          enum:
+            - na
+            - anon
+            - registered
+            - hasactiveaccess
+        cookie_consents:
+          type: string
+          description: The conversion consents in JSON format
+        custom_params:
+          type: string
+          description: A JSON representation of the custom parameters
+        external_offer_id:
+          type: string
+          description: External offer id
+        external_template_id:
+          type: string
+          description: External template id
+        external_term_ids:
+          type: string
+          description: Comma-separated list of External term id list
+          format: csv
+      additionalProperties: false
+    PostOauthAuthTokenRequest:
+      required:
+        - client_id
+      type: object
+      properties:
+        client_id:
+          type: string
+          description: The client ID of OAuth authorization
+        client_secret:
+          type: string
+          description: The client secret of OAuth authorization
+        code:
+          type: string
+          description: The OAuth code of OAuth authorization
+        refresh_token:
+          type: string
+          description: The OAuth refresh token of OAuth authorization
+        grant_type:
+          type: string
+          description: The grant type of OAuth authorization
+        redirect_uri:
+          type: string
+          description: The redirect URI of OAuth authorization
+        username:
+          type: string
+          description: The OAuth username
+        password:
+          type: string
+          description: The OAuth password
+        state:
+          type: string
+          description: The OAuth state
+        device_id:
+          type: string
+          description: The device ID for OAuth
+      additionalProperties: false
+    PostSubscriptionListRequest:
+      required:
+        - aid
+      type: object
+      properties:
+        aid:
+          type: string
+          description: The application ID
+        user_token:
+          type: string
+          description: The user token
+        user_provider:
+          type: string
+          description: The user token provider
+          enum:
+            - tinypass_go
+            - tinypass_accounts
+            - publisher_user_ref
+            - janrain
+            - conde
+            - gigya
+            - piano_id
+            - piano_id_lite
+        user_ref:
+          type: string
+          description: The encrypted user reference
+      additionalProperties: false
+    GenericErrorResponse:
+      required:
+        - code
+        - message
+      type: object
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+      additionalProperties: false
+    GenericResponse:
+      required:
+        - code
+        - message
+      type: object
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+      additionalProperties: true
+x-original-swagger-version: '2.0'

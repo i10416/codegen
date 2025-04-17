@@ -1,0 +1,980 @@
+{
+  "openapi" : "3.0.1",
+  "info" : {
+    "title" : "user",
+    "version" : "SNAPSHOT"
+  },
+  "servers" : [
+    {
+      "url" : "/api/v3"
+    }
+  ],
+  "tags" : [
+    {
+      "name" : "UserSmoke"
+    },
+    {
+      "name" : "UserAccess"
+    },
+    {
+      "name" : "User"
+    }
+  ],
+  "paths" : {
+    "/user/access/check.jwt" : {
+      "get" : {
+        "tags" : [
+          "UserAccess"
+        ],
+        "summary" : "Get user's access to resource in app in JWS format",
+        "description" : "Returns a JSON web token (signature) for a given app to verify the current user's access to a given resource. If there is no access, the token returns empty.",
+        "operationId" : "GetUserAccessCheck.jwt",
+        "parameters" : [
+          {
+            "name" : "aid",
+            "in" : "query",
+            "description" : "The application ID",
+            "required" : true,
+            "schema" : {
+              "type" : "string"
+            }
+          },
+          {
+            "name" : "rid",
+            "in" : "query",
+            "description" : "The resource ID",
+            "required" : true,
+            "schema" : {
+              "type" : "string"
+            }
+          },
+          {
+            "name" : "cross_app",
+            "in" : "query",
+            "description" : "Whether to include cross application access for the resource",
+            "required" : true,
+            "schema" : {
+              "type" : "boolean",
+              "default" : false
+            }
+          }
+        ],
+        "responses" : {
+          "200" : {
+            "description" : "successful operation",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "oneOf" : [
+                    {
+                      "$ref" : "#/components/schemas/StringResult"
+                    },
+                    {
+                      "$ref" : "#/components/schemas/GetUserAccessCheck.jwtError"
+                    },
+                    {
+                      "$ref" : "#/components/schemas/GenericErrorResponse"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/user/access/get" : {
+      "get" : {
+        "tags" : [
+          "UserAccess"
+        ],
+        "summary" : "Get user's access by user ID",
+        "description" : "Returns an Access object for a given access ID. The current user is considered.",
+        "operationId" : "GetUserAccessGet",
+        "parameters" : [
+          {
+            "name" : "access_id",
+            "in" : "query",
+            "description" : "The access ID",
+            "required" : true,
+            "schema" : {
+              "type" : "string"
+            }
+          }
+        ],
+        "responses" : {
+          "200" : {
+            "description" : "successful operation",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "oneOf" : [
+                    {
+                      "$ref" : "#/components/schemas/AccessResult"
+                    },
+                    {
+                      "$ref" : "#/components/schemas/GetUserAccessGetError"
+                    },
+                    {
+                      "$ref" : "#/components/schemas/GenericErrorResponse"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/user/access/list" : {
+      "get" : {
+        "tags" : [
+          "UserAccess"
+        ],
+        "summary" : "List accesses of current user",
+        "description" : "Lists the accesses of the current user.",
+        "operationId" : "GetUserAccessList",
+        "parameters" : [
+          {
+            "name" : "aid",
+            "in" : "query",
+            "description" : "The application ID",
+            "required" : true,
+            "schema" : {
+              "type" : "string"
+            }
+          },
+          {
+            "name" : "expand_bundled",
+            "in" : "query",
+            "description" : "Whether to expand bundled accesses in the response",
+            "required" : true,
+            "schema" : {
+              "type" : "boolean",
+              "default" : false
+            }
+          },
+          {
+            "name" : "cross_app",
+            "in" : "query",
+            "description" : "Whether to include cross application access for the resource",
+            "required" : true,
+            "schema" : {
+              "type" : "boolean",
+              "default" : false
+            }
+          }
+        ],
+        "responses" : {
+          "200" : {
+            "description" : "successful operation",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "oneOf" : [
+                    {
+                      "$ref" : "#/components/schemas/AccessDTOArrayResult"
+                    },
+                    {
+                      "$ref" : "#/components/schemas/GetUserAccessListError"
+                    },
+                    {
+                      "$ref" : "#/components/schemas/GenericErrorResponse"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/user/get" : {
+      "post" : {
+        "tags" : [
+          "User"
+        ],
+        "summary" : "Get user",
+        "description" : "Returns the current user",
+        "operationId" : "PostUserGet",
+        "responses" : {
+          "200" : {
+            "description" : "successful operation",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "oneOf" : [
+                    {
+                      "$ref" : "#/components/schemas/UserResult"
+                    },
+                    {
+                      "$ref" : "#/components/schemas/GenericErrorResponse"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components" : {
+    "schemas" : {
+      "GetUserAccessListError" : {
+        "type" : "object",
+        "required" : [
+          "code"
+        ],
+        "properties" : {
+          "code" : {
+            "type" : "integer",
+            "example" : "2",
+            "description" : "- 2: Access denied\n\n",
+            "enum" : [
+              2
+            ]
+          },
+          "message" : {
+            "type" : "string"
+          },
+          "localizedMessage" : {
+            "type" : "string"
+          }
+        }
+      },
+      "GetUserAccessGetError" : {
+        "type" : "object",
+        "required" : [
+          "code"
+        ],
+        "properties" : {
+          "code" : {
+            "type" : "integer",
+            "example" : "2, 5003",
+            "description" : "- 2: Access denied\n\n- 5003: Invalid access id\n\n",
+            "enum" : [
+              2,
+              5003
+            ]
+          },
+          "message" : {
+            "type" : "string"
+          },
+          "localizedMessage" : {
+            "type" : "string"
+          }
+        }
+      },
+      "GetUserAccessCheck.jwtError" : {
+        "type" : "object",
+        "required" : [
+          "code"
+        ],
+        "properties" : {
+          "code" : {
+            "type" : "integer",
+            "example" : "15005, 15006, 401, 2, 402",
+            "description" : "- 402: Invalid aid\n\n- 401: Invalid user\n\n- 15006: JWT token creation error. Empty secret key\n\n- 2: Access denied\n\n- 15005: JWT token creation error\n\n",
+            "enum" : [
+              402,
+              2,
+              15005,
+              15006,
+              401
+            ]
+          },
+          "message" : {
+            "type" : "string"
+          },
+          "localizedMessage" : {
+            "type" : "string"
+          }
+        }
+      },
+      "Access" : {
+        "required" : [
+          "access_id",
+          "can_revoke_access",
+          "expire_date",
+          "granted",
+          "parent_access_id",
+          "resource",
+          "start_date",
+          "user"
+        ],
+        "type" : "object",
+        "properties" : {
+          "access_id" : {
+            "type" : "string",
+            "description" : "The access ID"
+          },
+          "parent_access_id" : {
+            "type" : "string",
+            "description" : "The parent access ID (for accesses to bundled resources)"
+          },
+          "granted" : {
+            "type" : "boolean",
+            "description" : "Whether the access is granted"
+          },
+          "user" : {
+            "$ref" : "#/components/schemas/User"
+          },
+          "resource" : {
+            "$ref" : "#/components/schemas/Resource"
+          },
+          "expire_date" : {
+            "type" : "integer",
+            "description" : "The expire date of the access item; null means unlimited",
+            "format" : "timestamp"
+          },
+          "start_date" : {
+            "type" : "integer",
+            "description" : "The start date.",
+            "format" : "timestamp"
+          },
+          "can_revoke_access" : {
+            "type" : "boolean",
+            "description" : "Whether the access can be revoked (\"true\" or \"false\")"
+          }
+        },
+        "x-use-dates" : true
+      },
+      "AccessDTO" : {
+        "required" : [
+          "access_id",
+          "can_revoke_access",
+          "custom_data",
+          "expire_date",
+          "granted",
+          "parent_access_id",
+          "resource",
+          "start_date",
+          "user"
+        ],
+        "type" : "object",
+        "properties" : {
+          "access_id" : {
+            "type" : "string",
+            "description" : "The access ID"
+          },
+          "parent_access_id" : {
+            "type" : "string",
+            "description" : "The parent access ID (for accesses to bundled resources)"
+          },
+          "granted" : {
+            "type" : "boolean",
+            "description" : "Granted == true if the user has access"
+          },
+          "user" : {
+            "$ref" : "#/components/schemas/UserDto"
+          },
+          "resource" : {
+            "$ref" : "#/components/schemas/ResourceDto"
+          },
+          "expire_date" : {
+            "type" : "integer",
+            "description" : "The expire date of the access item; null means unlimited",
+            "format" : "timestamp"
+          },
+          "start_date" : {
+            "type" : "integer",
+            "description" : "The start date.",
+            "format" : "timestamp"
+          },
+          "can_revoke_access" : {
+            "type" : "boolean",
+            "description" : "Whether the access can be revoked (\"true\" or \"false\")"
+          },
+          "custom_data" : {
+            "type" : "string",
+            "description" : "Custom data"
+          }
+        },
+        "x-use-dates" : true
+      },
+      "Country" : {
+        "required" : [
+          "country_code",
+          "country_id",
+          "country_name"
+        ],
+        "type" : "object",
+        "properties" : {
+          "country_name" : {
+            "type" : "string",
+            "description" : "The country name"
+          },
+          "country_code" : {
+            "type" : "string",
+            "description" : "The country code"
+          },
+          "country_id" : {
+            "type" : "string",
+            "description" : "The country ID"
+          }
+        }
+      },
+      "DeliveryPeriodReadView" : {
+        "required" : [
+          "address_pub_id",
+          "delivery_period_pub_id",
+          "from",
+          "is_address_editable",
+          "is_deletable",
+          "is_donation",
+          "is_from_editable",
+          "is_to_editable",
+          "to"
+        ],
+        "type" : "object",
+        "properties" : {
+          "is_address_editable" : {
+            "type" : "string",
+            "description" : "Indicates if delivery period to date is editable"
+          },
+          "address_pub_id" : {
+            "type" : "string",
+            "description" : "Public ID of Address"
+          },
+          "is_to_editable" : {
+            "type" : "string",
+            "description" : "Indicates if delivery period to date is editable"
+          },
+          "from" : {
+            "type" : "string",
+            "description" : "Delivery Period starting date in ISO8601 format"
+          },
+          "is_from_editable" : {
+            "type" : "string",
+            "description" : "Indicates if delivery period from date is editable"
+          },
+          "to" : {
+            "type" : "string",
+            "description" : "Delivery Period ending date in ISO8601 format"
+          },
+          "is_donation" : {
+            "type" : "boolean",
+            "description" : "Indicates if delivery pause is an donation"
+          },
+          "is_deletable" : {
+            "type" : "string",
+            "description" : "Indicates if delivery period is deletable"
+          },
+          "delivery_period_pub_id" : {
+            "type" : "string",
+            "description" : "Public ID of Delivery Period"
+          }
+        }
+      },
+      "DeliveryScheduleConstraintViolationDTO" : {
+        "required" : [
+          "conflicting_periods_references",
+          "constraint_violation_code",
+          "message",
+          "target_period_reference"
+        ],
+        "type" : "object",
+        "properties" : {
+          "target_period_reference" : {
+            "$ref" : "#/components/schemas/PeriodReferenceDTO"
+          },
+          "constraint_violation_code" : {
+            "type" : "string",
+            "description" : "Unique code of given constraint violation"
+          },
+          "conflicting_periods_references" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/PeriodReferenceDTO"
+            }
+          },
+          "message" : {
+            "type" : "string",
+            "description" : "Violation explanation"
+          }
+        }
+      },
+      "DeliveryScheduleConstraintViolationsDTO" : {
+        "required" : [
+          "constraint_violations"
+        ],
+        "type" : "object",
+        "properties" : {
+          "constraint_violations" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/DeliveryScheduleConstraintViolationDTO"
+            }
+          }
+        }
+      },
+      "DeliveryScheduleReadView" : {
+        "required" : [
+          "delivery_periods",
+          "edit_threshold",
+          "main_period_pub_id"
+        ],
+        "type" : "object",
+        "properties" : {
+          "main_period_pub_id" : {
+            "type" : "string",
+            "description" : "Public ID of Delivery Period assigned as Main Schedule Period"
+          },
+          "edit_threshold" : {
+            "type" : "string",
+            "description" : "The earliest day of the Delivery Schedule that can be affected by an update"
+          },
+          "delivery_periods" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/DeliveryPeriodReadView"
+            }
+          }
+        }
+      },
+      "GeoLocation" : {
+        "required" : [
+          "city",
+          "country_code",
+          "postal_code",
+          "region_code",
+          "region_name"
+        ],
+        "type" : "object",
+        "properties" : {
+          "region_code" : {
+            "type" : "string",
+            "description" : "The code of the country region"
+          },
+          "region_name" : {
+            "type" : "string",
+            "description" : "The name of the country region"
+          },
+          "city" : {
+            "type" : "string",
+            "description" : "The name of the city"
+          },
+          "country_code" : {
+            "type" : "string",
+            "description" : "The country code"
+          },
+          "postal_code" : {
+            "type" : "string",
+            "description" : "The user's postal code"
+          }
+        }
+      },
+      "PaymentMethod" : {
+        "required" : [
+          "description",
+          "upi_color",
+          "upi_expiration_month",
+          "upi_expiration_year",
+          "upi_nickname",
+          "upi_number",
+          "upi_postal_code",
+          "user_payment_info_id"
+        ],
+        "type" : "object",
+        "properties" : {
+          "upi_nickname" : {
+            "type" : "string",
+            "description" : "The card nickname"
+          },
+          "upi_color" : {
+            "type" : "string",
+            "description" : "The color of the card"
+          },
+          "upi_number" : {
+            "type" : "string",
+            "description" : "The card number"
+          },
+          "upi_expiration_month" : {
+            "type" : "integer",
+            "description" : "The expiration month of the card",
+            "format" : "int32"
+          },
+          "upi_expiration_year" : {
+            "type" : "integer",
+            "description" : "The expiration year of the card",
+            "format" : "int32"
+          },
+          "upi_postal_code" : {
+            "type" : "string",
+            "description" : "The postal code of the card"
+          },
+          "description" : {
+            "type" : "string",
+            "description" : "The description of the user payment info"
+          },
+          "user_payment_info_id" : {
+            "type" : "string",
+            "description" : "The user payment info ID"
+          }
+        }
+      },
+      "PeriodReferenceDTO" : {
+        "required" : [
+          "index_in_array",
+          "period_pub_id"
+        ],
+        "type" : "object",
+        "properties" : {
+          "index_in_array" : {
+            "type" : "integer",
+            "description" : "Index of the target period in source array, likely array from request",
+            "format" : "int32"
+          },
+          "period_pub_id" : {
+            "type" : "string",
+            "description" : "Public ID of given period"
+          }
+        }
+      },
+      "Region" : {
+        "required" : [
+          "region_code",
+          "region_id",
+          "region_name"
+        ],
+        "type" : "object",
+        "properties" : {
+          "region_name" : {
+            "type" : "string",
+            "description" : "The name of the country region"
+          },
+          "region_code" : {
+            "type" : "string",
+            "description" : "The code of the country region"
+          },
+          "region_id" : {
+            "type" : "string",
+            "description" : "The ID of the country region"
+          }
+        }
+      },
+      "Resource" : {
+        "required" : [
+          "aid",
+          "description",
+          "image_url",
+          "name",
+          "publish_date",
+          "purchase_url",
+          "rid"
+        ],
+        "type" : "object",
+        "properties" : {
+          "rid" : {
+            "type" : "string",
+            "description" : "The resource ID",
+            "example" : "rid_example"
+          },
+          "aid" : {
+            "type" : "string",
+            "description" : "The application ID"
+          },
+          "publish_date" : {
+            "type" : "integer",
+            "description" : "The publish date",
+            "format" : "timestamp"
+          },
+          "name" : {
+            "type" : "string",
+            "description" : "The name"
+          },
+          "description" : {
+            "type" : "string",
+            "description" : "The resource description"
+          },
+          "image_url" : {
+            "type" : "string",
+            "description" : "The URL of the resource image"
+          },
+          "purchase_url" : {
+            "type" : "string",
+            "description" : "The URL of the purchase page"
+          }
+        }
+      },
+      "ResourceDto" : {
+        "required" : [
+          "aid",
+          "description",
+          "image_url",
+          "name",
+          "publish_date",
+          "purchase_url",
+          "rid"
+        ],
+        "type" : "object",
+        "properties" : {
+          "rid" : {
+            "type" : "string",
+            "description" : "The resource ID"
+          },
+          "aid" : {
+            "type" : "string",
+            "description" : "The application ID"
+          },
+          "publish_date" : {
+            "type" : "integer",
+            "description" : "The publish date",
+            "format" : "timestamp"
+          },
+          "name" : {
+            "type" : "string",
+            "description" : "The name"
+          },
+          "description" : {
+            "type" : "string",
+            "description" : "The resource description"
+          },
+          "image_url" : {
+            "type" : "string",
+            "description" : "The URL of the resource image"
+          },
+          "purchase_url" : {
+            "type" : "string",
+            "description" : "The URL of the purchase page"
+          }
+        }
+      },
+      "UpdateDeliveryScheduleResponse" : {
+        "required" : [
+          "constraint_violations"
+        ],
+        "type" : "object",
+        "properties" : {
+          "constraint_violations" : {
+            "$ref" : "#/components/schemas/DeliveryScheduleConstraintViolationsDTO"
+          }
+        }
+      },
+      "User" : {
+        "required" : [
+          "email",
+          "first_name",
+          "image1",
+          "last_name",
+          "personal_name",
+          "uid"
+        ],
+        "type" : "object",
+        "properties" : {
+          "uid" : {
+            "type" : "string",
+            "description" : "The user's ID"
+          },
+          "first_name" : {
+            "type" : "string",
+            "description" : "The user's first name"
+          },
+          "last_name" : {
+            "type" : "string",
+            "description" : "The user's last name"
+          },
+          "personal_name" : {
+            "type" : "string",
+            "description" : "The user's personal name. Name and surname ordered as per locale"
+          },
+          "email" : {
+            "type" : "string",
+            "description" : "The user's email address (single)"
+          },
+          "image1" : {
+            "type" : "string",
+            "description" : "The user's profile image"
+          }
+        }
+      },
+      "UserAddress" : {
+        "required" : [
+          "address1",
+          "address2",
+          "city",
+          "company_name",
+          "country",
+          "first_name",
+          "last_name",
+          "personal_name",
+          "phone",
+          "postal_code",
+          "region",
+          "user_address_id"
+        ],
+        "type" : "object",
+        "properties" : {
+          "user_address_id" : {
+            "type" : "string",
+            "description" : "The public ID of the user address"
+          },
+          "region" : {
+            "$ref" : "#/components/schemas/Region"
+          },
+          "country" : {
+            "$ref" : "#/components/schemas/Country"
+          },
+          "city" : {
+            "type" : "string",
+            "description" : "The name of the city"
+          },
+          "postal_code" : {
+            "type" : "string",
+            "description" : "The user's postal code"
+          },
+          "company_name" : {
+            "type" : "string",
+            "description" : "company_name"
+          },
+          "first_name" : {
+            "type" : "string",
+            "description" : "The user's first name"
+          },
+          "last_name" : {
+            "type" : "string",
+            "description" : "The user's last name"
+          },
+          "personal_name" : {
+            "type" : "string",
+            "description" : "The user's personal name. Name and surname ordered as per locale"
+          },
+          "address1" : {
+            "type" : "string",
+            "description" : "The user's first address"
+          },
+          "address2" : {
+            "type" : "string",
+            "description" : "The user's second address"
+          },
+          "phone" : {
+            "type" : "string",
+            "description" : "The user's phone"
+          }
+        }
+      },
+      "UserDto" : {
+        "required" : [
+          "email",
+          "first_name",
+          "image1",
+          "last_name",
+          "personal_name",
+          "uid"
+        ],
+        "type" : "object",
+        "properties" : {
+          "uid" : {
+            "type" : "string",
+            "description" : "The user's ID"
+          },
+          "first_name" : {
+            "type" : "string",
+            "description" : "The user's first name"
+          },
+          "last_name" : {
+            "type" : "string",
+            "description" : "The user's last name"
+          },
+          "personal_name" : {
+            "type" : "string",
+            "description" : "The user's personal name. Name and surname ordered as per locale"
+          },
+          "email" : {
+            "type" : "string",
+            "description" : "The user's email address (single)"
+          },
+          "image1" : {
+            "type" : "string",
+            "description" : "The user's profile image"
+          }
+        }
+      },
+      "StringResult" : {
+        "required" : [
+          "data"
+        ],
+        "type" : "object",
+        "properties" : {
+          "data" : {
+            "type" : "string"
+          }
+        },
+        "additionalProperties" : false
+      },
+      "AccessResult" : {
+        "required" : [
+          "Access"
+        ],
+        "type" : "object",
+        "properties" : {
+          "Access" : {
+            "$ref" : "#/components/schemas/Access"
+          }
+        },
+        "additionalProperties" : false
+      },
+      "AccessDTOArrayResult" : {
+        "required" : [
+          "AccessDTO"
+        ],
+        "type" : "object",
+        "properties" : {
+          "AccessDTO" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/AccessDTO"
+            }
+          }
+        },
+        "additionalProperties" : false
+      },
+      "UserResult" : {
+        "required" : [
+          "User"
+        ],
+        "type" : "object",
+        "properties" : {
+          "User" : {
+            "$ref" : "#/components/schemas/User"
+          }
+        },
+        "additionalProperties" : false
+      },
+      "GenericErrorResponse" : {
+        "required" : [
+          "code",
+          "message"
+        ],
+        "type" : "object",
+        "properties" : {
+          "code" : {
+            "type" : "integer"
+          },
+          "message" : {
+            "type" : "string"
+          }
+        },
+        "additionalProperties" : false
+      },
+      "GenericResponse" : {
+        "required" : [
+          "code",
+          "message"
+        ],
+        "type" : "object",
+        "properties" : {
+          "code" : {
+            "type" : "integer"
+          },
+          "message" : {
+            "type" : "string"
+          }
+        },
+        "additionalProperties" : true
+      }
+    }
+  },
+  "x-original-swagger-version" : "2.0"
+}
