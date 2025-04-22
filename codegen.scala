@@ -37,14 +37,6 @@ import J.SchemaDefinition.NumberType
 import J.SchemaDefinition.BoolType
 
 
-@main def schemaGenerate(args: String*) = {
-  val group = args.headOption.getOrElse("publisher")
-  val name =args.drop(1).headOption.getOrElse("Term").capitalize
-  val mode = Mode.DataSource
-  val data = Files.readString(Path.of(s"sdk/piano/spec/json/${group}.json"))
-  val schema = parser.parse(data).right.get
-  println(schemaGen(schema, name, mode))
-}
 def resolve(schema: Json, ref: Reference): ObjectType =
   root.components.schemas.selectDynamic(ref.derefName).json.getOption(schema).get.as[ObjectType] match
     case Left(e) => throw new Exception(e)
@@ -379,19 +371,6 @@ object J {
   }
 }
 
-@main
-def generateModels(args: String*) =
-  val group = args.headOption.getOrElse("publisher")
-  val name = args.drop(1).headOption.getOrElse("Term")
-  
-  val mode = Mode.DataSource
-  
-  val data = Files.readString(Path.of(s"sdk/piano/spec/json/${group}.json"))
-  val schema = parser.parse(data).right.get
-  
-  val definitions = modelGen(schema, name, mode)
-
-  println(definitions)
 def snake2Camel(str: String) =
   val elements = str.split("_")
   val (head,tail) = (elements.head, elements.tail)
@@ -453,17 +432,6 @@ case class FunctionDecl(fname: String, arg: TypeIdent,ret: TypeIdent, stmts: Lis
                 )
               ).flatten.mkString("\n")
 }
-
-@main
-def generateModelMappings(args: String*) =
-  val group = args.headOption.getOrElse("publisher")
-  val name = args.drop(1).headOption.getOrElse("Term")
-  val mode = Mode.DataSource
-  val data = Files.readString(Path.of(s"sdk/piano/spec/json/${group}.json"))
-  val schema = parser.parse(data).right.get
-  val (stmts, functions) = mappingsGen(schema, name, mode,schemaTypeNamespace = Nil)
-  println(functions.mkString("\n"))
-  println(stmts.mkString("\n"))
 
 def propertyCanBeAbsent(owner: ObjectType, propName: String,property:SchemaDefinition): Boolean =
         property.explicitNullable || !owner.required.exists(_.contains(propName))
@@ -660,6 +628,7 @@ def metadataGen(name: String, mode: Mode): String =
     s"  resp.TypeName = req.ProviderTypeName + \"_${providerTypeName}\"",
     "}"
   ).mkString("\n")
+
 def schemaGen(schema: Json, name: String, mode: Mode) =
   val modelDefinition = resolve(schema, Reference.fromName(name))
   val impl = mode match
