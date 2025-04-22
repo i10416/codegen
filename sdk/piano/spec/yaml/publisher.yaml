@@ -24095,6 +24095,7 @@ components:
       x-is-webhook-with-expires: false
       x-is-webhook: true
     PaymentBillingPlanTable:
+      type: object
       properties:
         date:
           type: string

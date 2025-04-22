@@ -32026,6 +32026,7 @@
         "x-is-webhook": true
       },
       "PaymentBillingPlanTable": {
+        "type": "object",
         "properties": {
           "date": {
             "type": "string",
