@@ -24094,7 +24094,7 @@ components:
           readOnly: true
       x-is-webhook-with-expires: false
       x-is-webhook: true
-    PaymentBillingPlanTable:
+    PaymentBillingPlanTable: # +
       type: object
       properties:
         date:
@@ -27183,39 +27183,14 @@ components:
           format: int32
     Term:
       required:
-        - adview_access_period
-        - adview_vast_url
         - aid
-        - allow_start_in_future
         - billing_config
-        - billing_configuration
         - change_options
         - collect_address
-        - collect_shipping_address
         - create_date
         - currency_symbol
-        - custom_data
-        - custom_default_access_period
-        - custom_require_user
-        - default_country
-        - delivery_zone
         - description
-        # - evt: recursive type not supported
-        - evt_cds_product_id
-        - evt_fixed_time_access_period
-        - evt_google_play_product_id
-        - evt_grace_period
-        - evt_itunes_bundle_id
-        - evt_itunes_product_id
-        - evt_verification_period
-        - external_api_form_fields
-        - external_api_id
-        - external_api_name
-        - external_api_source
-        - external_product_ids
-        - external_term_id
         - is_allowed_to_change_schedule_period_in_past
-        - maximum_days_in_advance
         - name
         - payment_allow_gift
         - payment_allow_promo_codes
@@ -27233,14 +27208,11 @@ components:
         - payment_renew_grace_period
         - payment_trial_new_customers_only
         - product_category
-        - registration_access_period
-        - registration_grace_period
         - resource
         - schedule
         - schedule_billing
         - shared_account_count
         - shared_redemption_url
-        - show_full_billing_plan
         - subscription_management_url
         - term_billing_descriptor
         - term_id
@@ -27248,16 +27220,45 @@ components:
         - type_name
         - update_date
         - verify_on_renewal
-        - vouchering_policy
+        # - evt: recursive type not supported
+        # Undefine-able
+        # - adview_access_period
+        # - adview_vast_url
+        # - allow_start_in_future
+        # - billing_configuration
+        # - collect_shipping_address
+        # - custom_data
+        # - custom_require_user
+        # - custom_default_access_period
+        # - default_country
+        # - delivery_zone
+        # - evt_cds_product_id
+        # - evt_fixed_time_access_period
+        # - evt_google_play_product_id
+        # - evt_grace_period
+        # - evt_itunes_bundle_id
+        # - evt_itunes_product_id
+        # - external_api_form_fields
+        # - external_api_id
+        # - external_api_name
+        # - external_api_source
+        # - external_product_ids
+        # - external_term_id
+        # - maximum_days_in_advance
+        # - registration_access_period
+        # - registration_grace_period
+        # - show_full_billing_plan
+        # - vouchering_policy
       type: object
       properties:
         term_id:
           type: string
           description: The term ID
-          example: TM1A2BC3D4E5
+          example: TM1A2BC3D4E5 # +
         aid:
           type: string
           description: The application ID
+          example: AaBbCcDefg # +
         resource:
           $ref: '#/components/schemas/Resource'
         type:
@@ -27380,11 +27381,11 @@ components:
           description: The first price of the term
           format: double
         schedule:
-          nullable: true
+          nullable: true # +
           $ref: '#/components/schemas/Schedule'
         schedule_billing:
           type: string
-          nullable: true
+          nullable: true # +
           description: The schedule billing
         custom_require_user:
           type: boolean
@@ -27447,7 +27448,7 @@ components:
           items:
             $ref: '#/components/schemas/ExternalAPIField'
         evt_verification_period:
-          nullable: true
+          nullable: true # +
           type: integer
           description: >-
             The <a href =
@@ -27511,11 +27512,11 @@ components:
           type: integer
           description: The count of allowed shared-subscription accounts
           format: int32
-          nullable: true
+          nullable: true # +
         shared_redemption_url:
           type: string
           description: The shared subscription redemption URL
-          nullable: true
+          nullable: true # +
         billing_configuration:
           type: string
           description: >-
