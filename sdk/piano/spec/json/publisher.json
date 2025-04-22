@@ -36035,7 +36035,6 @@
           "payment_trial_new_customers_only",
           "product_category",
           "resource",
-          "schedule",
           "schedule_billing",
           "shared_account_count",
           "shared_redemption_url",
@@ -44189,11 +44188,11 @@
       },
       "TermResult": {
         "required": [
-          "Term"
+          "term"
         ],
         "type": "object",
         "properties": {
-          "Term": {
+          "term": {
             "$ref": "#/components/schemas/Term"
           }
         },

@@ -27209,7 +27209,7 @@ components:
         - payment_trial_new_customers_only
         - product_category
         - resource
-        - schedule
+        # - schedule: This field is nullable, but not-undefineable. However, oapi-codegen cannot handle nullable ref
         - schedule_billing
         - shared_account_count
         - shared_redemption_url
@@ -33752,10 +33752,10 @@ components:
       additionalProperties: false
     TermResult:
       required:
-        - Term
+        - term
       type: object
       properties:
-        Term:
+        term:
           $ref: '#/components/schemas/Term'
       additionalProperties: false
     TermStatsArrayResult:
