@@ -24094,6 +24094,81 @@ components:
           readOnly: true
       x-is-webhook-with-expires: false
       x-is-webhook: true
+    PaymentBillingPlanTable:
+      properties:
+        date:
+          type: string
+          example: "Apr 17, 2026"
+          description: |
+            Payment billing plan table date for humans
+            such as "Today" or "Apr 17, 2026"
+        dateValue:
+          type: integer
+          example: 1744884329
+          format: timestamp
+          description: Payment billing plan table date in timestamp
+        period:
+          type: string
+          example: "year"
+        shortPeriod:
+          type: string
+          example: " for year"
+          description: |
+            human readable billing period in shorter expression such as /yr
+        billingPeriod:
+          type: string
+          example: "1 year"
+        priceChargedStr:
+          type: string
+          example: "$99.99"
+          description: price with currency unit symbol
+        priceValue:
+          type: number
+          format: double
+          example: 99.99
+        cycles:
+          type: string
+          example: "1"
+        isFreeTrial:
+          type: string
+          example: "false"
+        isTrial:
+          type: string
+          example: "true"
+        isPayWhatYouWant:
+          type: string
+          example: "false"
+        billing:
+          type: string
+          example: "one payment of $99.99"
+          description: |
+            payment condition such as "one payment of $99.99" or "$119.99 per year"
+        duration:
+          type: string
+          example: "1 year of access"
+        billingInfo:
+          type: string
+          example: "one payment of $99.99"
+        priceAndTaxInMinorUnit:
+          type: number
+          example: 9999
+        isFree:
+          type: string
+          example: "false"
+        price:
+          type: string
+          example: "$99.99"
+          description: price with currency unit symbol
+        priceAndTax:
+          type: number
+          format: double
+          example: 99.99
+        currency:
+          type: string
+          example: "USD"
+        totalBilling:
+          type: string
+          example: "one payment of $99.99"
     PaymentInquiry:
       required:
         - app
@@ -25273,6 +25348,7 @@ components:
           description: The name
         description:
           type: string
+          nullable: true # +
           description: The resource description
         image_url:
           type: string
@@ -25314,6 +25390,7 @@ components:
           description: The URL of the purchase page
         resource_url:
           type: string
+          nullable: true # +
           description: The URL of the resource
         external_id:
           type: string
@@ -27176,7 +27253,7 @@ components:
         term_id:
           type: string
           description: The term ID
-          example: term_example
+          example: TM1A2BC3D4E5
         aid:
           type: string
           description: The application ID
@@ -27250,8 +27327,7 @@ components:
         payment_billing_plan_table:
           type: array
           items:
-            type: object
-            properties: {}
+            $ref: "#/components/schemas/PaymentBillingPlanTable"
         payment_allow_renew_days:
           type: integer
           description: How many days in advance users user can renew
@@ -27303,9 +27379,11 @@ components:
           description: The first price of the term
           format: double
         schedule:
+          nullable: true
           $ref: '#/components/schemas/Schedule'
         schedule_billing:
           type: string
+          nullable: true
           description: The schedule billing
         custom_require_user:
           type: boolean
@@ -27368,6 +27446,7 @@ components:
           items:
             $ref: '#/components/schemas/ExternalAPIField'
         evt_verification_period:
+          nullable: true
           type: integer
           description: >-
             The <a href =
@@ -27414,6 +27493,7 @@ components:
         billing_config:
           type: string
           description: The type of billing config
+          example: "subscription"
         is_allowed_to_change_schedule_period_in_past:
           type: boolean
           description: >-
@@ -27430,9 +27510,11 @@ components:
           type: integer
           description: The count of allowed shared-subscription accounts
           format: int32
+          nullable: true
         shared_redemption_url:
           type: string
           description: The shared subscription redemption URL
+          nullable: true
         billing_configuration:
           type: string
           description: >-
@@ -27653,9 +27735,11 @@ components:
         from_period_id:
           type: string
           description: The ID of the "From" term period
+          nullable: true
         from_period_name:
           type: string
           description: The name of the "From" term period
+          nullable: true
         from_resource_id:
           type: string
           description: The ID of the "From" resource
@@ -27674,9 +27758,11 @@ components:
         to_period_id:
           type: string
           description: The ID of the "To" term period
+          nullable: true
         to_period_name:
           type: string
           description: The period name of the "To" term
+          nullable: true
         to_resource_id:
           type: string
           description: The ID of the "To" resource
@@ -27724,6 +27810,7 @@ components:
           type: boolean
           description: Whether the subscription is upgraded from a scheduled term
         shared_account_count:
+          nullable: true
           type: integer
           description: The count of allowed shared-subscription accounts
           format: int32
@@ -33410,7 +33497,7 @@ components:
         - Term
       type: object
       properties:
-        Term:
+        terms:
           type: array
           items:
             $ref: '#/components/schemas/Term'
