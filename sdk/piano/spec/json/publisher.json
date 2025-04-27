@@ -13500,7 +13500,7 @@
                 "schema": {
                   "oneOf": [
                     {
-                      "$ref": "#/components/schemas/TermResult"
+                      "$ref": "#/components/schemas/ExternalTermResult"
                     },
                     {
                       "$ref": "#/components/schemas/PostPublisherTermExternalCreateError"
@@ -13543,7 +13543,7 @@
                 "schema": {
                   "oneOf": [
                     {
-                      "$ref": "#/components/schemas/TermResult"
+                      "$ref": "#/components/schemas/ExternalTermResult"
                     },
                     {
                       "$ref": "#/components/schemas/PostPublisherTermExternalUpdateError"
@@ -28055,6 +28055,7 @@
             "description": "Whether the field will be submitted hiddenly from the user, default value is required"
           },
           "default_value": {
+            "nullable": true,
             "type": "string",
             "description": "Default value for the field. It will be pre-entered on the form"
           },
@@ -36007,6 +36008,194 @@
           }
         }
       },
+      "ExternalTerm": {
+        "description": "The variant of Term for [external service term](https://docs.piano.io/external-service-term/)",
+        "required": [
+          "aid",
+          "collect_address",
+          "create_date",
+          "description",
+          "is_allowed_to_change_schedule_period_in_past",
+          "name",
+          "product_category",
+          "resource",
+          "shared_account_count",
+          "shared_redemption_url",
+          "term_id",
+          "type",
+          "type_name",
+          "update_date",
+          "evt_fixed_time_access_period",
+          "evt_google_play_product_id",
+          "evt_grace_period",
+          "evt_itunes_bundle_id",
+          "evt_itunes_product_id",
+          "external_api_form_fields",
+          "external_api_id",
+          "external_api_name",
+          "external_api_source"
+        ],
+        "type": "object",
+        "properties": {
+          "term_id": {
+            "type": "string",
+            "description": "The term ID",
+            "example": "TM1A2BC3D4E5"
+          },
+          "aid": {
+            "type": "string",
+            "description": "The application ID",
+            "example": "AaBbCcDefg"
+          },
+          "resource": {
+            "$ref": "#/components/schemas/Resource"
+          },
+          "type": {
+            "type": "string",
+            "description": "The term type",
+            "enum": [
+              "payment",
+              "adview",
+              "registration",
+              "newsletter",
+              "external",
+              "custom",
+              "grant_access",
+              "gift",
+              "specific_email_addresses_contract",
+              "email_domain_contract",
+              "ip_range_contract",
+              "dynamic",
+              "linked"
+            ]
+          },
+          "type_name": {
+            "type": "string",
+            "description": "The term type name",
+            "enum": [
+              "Payment",
+              "Ad View",
+              "Registration",
+              "Newsletter",
+              "External",
+              "Custom",
+              "Access Granted",
+              "Gift",
+              "Specific Email Addresses Contract",
+              "Email Domain Contract",
+              "IP Range Contract",
+              "Dynamic",
+              "Linked"
+            ]
+          },
+          "name": {
+            "type": "string",
+            "description": "The term name"
+          },
+          "description": {
+            "type": "string",
+            "description": "The description of the term"
+          },
+          "create_date": {
+            "type": "integer",
+            "description": "The creation date",
+            "format": "timestamp"
+          },
+          "update_date": {
+            "type": "integer",
+            "description": "The update date",
+            "format": "timestamp"
+          },
+          "external_api_id": {
+            "type": "string",
+            "description": "The ID of the external API configuration"
+          },
+          "external_api_name": {
+            "type": "string",
+            "description": "The name of the external API configuration"
+          },
+          "external_api_source": {
+            "type": "integer",
+            "description": "The source of the external API configuration",
+            "format": "int32",
+            "enum": [
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7,
+              8,
+              9,
+              10
+            ],
+            "x-tinypass-enum-description": [
+              "1: CDS",
+              "2: VESTDB",
+              "3: APPLE_ITUNES",
+              "4: PSC_PROVIDER",
+              "5: GOOGLE_PLAY",
+              "6: ABRIL",
+              "7: ABRIL_ADDRESS",
+              "8: SWG",
+              "9: NEWSCYCLE",
+              "10: PAYPAL_SUBSCRIPTION"
+            ]
+          },
+          "external_api_form_fields": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ExternalAPIField"
+            }
+          },
+          "evt_verification_period": {
+            "nullable": true,
+            "type": "integer",
+            "description": "The <a href = \"https://docs.piano.io/external-service-term/#externaltermverification\">periodicity</a> (in seconds) of checking the EVT subscription with the external service",
+            "format": "int32"
+          },
+          "evt_fixed_time_access_period": {
+            "type": "integer",
+            "nullable": true,
+            "description": "The period to grant access for (in days)",
+            "format": "int32"
+          },
+          "evt_grace_period": {
+            "type": "integer",
+            "description": "The External API grace period for Apple Subscribing Inside the App feature",
+            "format": "int32"
+          },
+          "evt_itunes_bundle_id": {
+            "type": "string",
+            "description": "iTunes's bundle ID"
+          },
+          "evt_itunes_product_id": {
+            "type": "string",
+            "description": "iTunes's product ID"
+          },
+          "evt_google_play_product_id": {
+            "type": "string",
+            "nullable": true,
+            "description": "Google Play's product ID"
+          },
+          "collect_address": {
+            "type": "boolean",
+            "description": "Whether to collect an address for this term"
+          },
+          "shared_account_count": {
+            "type": "integer",
+            "description": "The count of allowed shared-subscription accounts",
+            "format": "int32",
+            "nullable": true
+          },
+          "shared_redemption_url": {
+            "type": "string",
+            "description": "The shared subscription redemption URL",
+            "nullable": true
+          }
+        }
+      },
       "Term": {
         "required": [
           "aid",
@@ -43235,7 +43424,7 @@
         ],
         "type": "object",
         "properties": {
-          "AppFeatures": {
+          "app_features": {
             "$ref": "#/components/schemas/AppFeatures"
           }
         },
@@ -43328,7 +43517,7 @@
         ],
         "type": "object",
         "properties": {
-          "TermConversion": {
+          "conversion": {
             "$ref": "#/components/schemas/TermConversion"
           }
         },
@@ -43340,7 +43529,7 @@
         ],
         "type": "object",
         "properties": {
-          "TermConversionData": {
+          "conversion_data": {
             "$ref": "#/components/schemas/TermConversionData"
           }
         },
@@ -43367,7 +43556,7 @@
         ],
         "type": "object",
         "properties": {
-          "ExperienceMetadata": {
+          "data": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/ExperienceMetadata"
@@ -43805,6 +43994,20 @@
         },
         "additionalProperties": false
       },
+      "ExternalTermArrayResult": {
+        "required": [
+          "Term"
+        ],
+        "type": "object",
+        "properties": {
+          "terms": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ExternalTerm"
+            }
+          }
+        }
+      },
       "TermArrayResult": {
         "required": [
           "Term"
@@ -44182,6 +44385,18 @@
         "properties": {
           "TermChangeOption": {
             "$ref": "#/components/schemas/TermChangeOption"
+          }
+        },
+        "additionalProperties": false
+      },
+      "ExternalTermResult": {
+        "required": [
+          "term"
+        ],
+        "type": "object",
+        "properties": {
+          "term": {
+            "$ref": "#/components/schemas/ExternalTerm"
           }
         },
         "additionalProperties": false
