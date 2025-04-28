@@ -756,13 +756,14 @@ sealed trait Term {
 sealed trait Stmt extends Term
 sealed trait Expr extends Stmt {
   def `...`: Term.Spread = Term.Spread(this)
+  def asRef: Term.AsRef = Term.AsRef(this)
 }
 
 object Term {
-  case class Comment(str: String) extends Term {
-    def render(level: Int): String =
-      str.linesIterator.map(line => indent(level) + "// " + line).mkString("\n")
+  case class AsRef(e: Expr) extends Term {
+    def render(level: Int): String = "&" + e.render(level)
   }
+
   case class LitBool(b: Boolean) extends Expr {
     def render(level: Int = 0): String = s"$b"
   }
@@ -1316,7 +1317,6 @@ def integration(args: String*) =
   val definitions = modelGen(schema, name, mode)
   val schemaDecl = schemaGen(schema, name, mode).render(0)
 
-
   // prelude
   println(miscGen(name, mode).map(_.render(0)).mkString("\n"))
 
@@ -1393,7 +1393,7 @@ def miscGen(name: String, mode: Mode): List[Term.FnDecl] =
 
   val ret = mode.implementee
   val constr = Term.FnDecl(s"New$implName", Nil, List(Direct(ret)))(
-    Term.Ret(Term.Init(implType))
+    Term.Ret(Term.Init(implType).asRef)
   )
   val ctx = TypeIdent("context", "Context")
   val configure = Term.FnDecl(
