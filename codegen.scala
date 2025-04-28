@@ -38,7 +38,7 @@ import io.circe.syntax.*
 import java.nio.file.Files
 import java.nio.file.Path
 
-def resolve(schema: Json, ref: Reference): ObjectType =
+private def resolve(schema: Json, ref: Reference): ObjectType =
   root.components.schemas
     .selectDynamic(ref.derefName)
     .json
@@ -1316,12 +1316,6 @@ def integration(args: String*) =
   val definitions = modelGen(schema, name, mode)
   val schemaDecl = schemaGen(schema, name, mode).render(0)
 
-  val (decl, stmts, functions) = mappingsGen(
-    schema,
-    name,
-    mode,
-    schemaTypeNamespace = List(platform + "_" + group)
-  )
 
   // prelude
   println(miscGen(name, mode).map(_.render(0)).mkString("\n"))
@@ -1342,6 +1336,12 @@ def integration(args: String*) =
   println(schemaDecl)
 
   // CRUD operation
+  val (decl, stmts, functions) = mappingsGen(
+    schema,
+    name,
+    mode,
+    schemaTypeNamespace = List(platform + "_" + group)
+  )
   println(functions.map(_.render(0)).mkString("\n"))
   println(genRead(mode, name, decl, stmts).render(0))
   println(
