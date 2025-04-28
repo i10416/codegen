@@ -89,6 +89,9 @@ sealed trait Mode {
   def configureResponse = TypeIdent(namespace, "ConfigureResponse")
   def schemaRequest = TypeIdent(namespace, "SchemaRequest")
   def schemaResponse = TypeIdent(namespace, "SchemaResponse")
+  def readRequest = TypeIdent(namespace, "ReadRequest")
+  def readResponse = TypeIdent(namespace, "ReadResponse")
+
 }
 object Mode {
   case object DataSource extends Mode
@@ -334,6 +337,135 @@ private def renderAttributes(
     openDefn_
   }
   attributes.toList
+
+def genMutationBoilerplates(
+    mode: Mode,
+    name: String,
+    stateDecl: String,
+    mappings: List[Stmt]
+): List[Term.FnDecl] =
+  mode match
+    case DataSource => Nil
+    case Resource => {
+      val implName = mode match
+        case DataSource => name + "DataSource"
+        case Resource   => name + "Resource"
+      val implType = TypeIdent(Nil, implName)
+      val selectData = i("req") \\ "State" \\ "Get"
+      val readDataToModel =
+        (i("resp") \\ "Diagnostics" \\ "Append")(
+          selectData(
+            i("ctx"),
+            Term.Eval("&state")
+          ).`...`
+        )
+      val returnOnError =
+        Term.If((i("resp") \\ "Diagnostics" \\ "HasError")())(Term.Ret())
+      val writeModelToData =
+        (i("resp") \\ "Diagnostics" \\ "Append")(
+          (i("resp") \\ "State" \\ "Set")(
+            i("ctx"),
+            Term.Eval("&state")
+          ).`...`
+        )
+      val puts =
+        for (action <- List("Create", "Update"))
+          yield Term.FnDecl(
+            Some(("r", Ptr(implType))),
+            action,
+            List(
+              ("ctx", Direct(TypeIdent("context", "Context"))),
+              ("req", Direct(TypeIdent(mode.namespace, action + "Request"))),
+              ("resp", Direct(TypeIdent(mode.namespace, action + "Response")))
+            ),
+            Nil,
+            Term.Block(
+              (Term.Eval(stateDecl) ::
+                readDataToModel ::
+                returnOnError ::
+                mappings.appended(writeModelToData))*
+            )
+          )
+      val del = Term.FnDecl(
+        Some(("r", Ptr(implType))),
+        "Delete",
+        List(
+          ("ctx", Direct(TypeIdent("context", "Context"))),
+          ("req", Direct(TypeIdent(mode.namespace, "Delete" + "Request"))),
+          ("resp", Direct(TypeIdent(mode.namespace, "Delete" + "Response")))
+        ),
+        Nil,
+        Term.Block(
+          (Term.Eval(stateDecl) ::
+            readDataToModel ::
+            returnOnError ::
+            Nil)*
+        )
+      ) :: Nil
+      val imports = Term.FnDecl(
+        Some(("r", Ptr(implType))),
+        "ImportState",
+        List(
+          ("ctx", Direct(TypeIdent("context", "Context"))),
+          ("req", Direct(TypeIdent(mode.namespace, "ImportState" + "Request"))),
+          (
+            "resp",
+            Direct(TypeIdent(mode.namespace, "ImportState" + "Response"))
+          )
+        ),
+        Nil,
+        Term.Block()
+      ) :: Nil
+      puts ::: del ::: imports
+    }
+
+def genRead(
+    mode: Mode,
+    name: String,
+    stateDecl: String,
+    mappings: List[Stmt]
+): Term.FnDecl =
+  val implName = mode match
+    case DataSource => name + "DataSource"
+    case Resource   => name + "Resource"
+  val implType = TypeIdent(Nil, implName)
+  val selectData = mode match
+    case DataSource => i("req") \\ "Config" \\ "Get"
+    case Resource   => i("req") \\ "State" \\ "Get"
+
+  val readDataToModel =
+    (i("resp") \\ "Diagnostics" \\ "Append")(
+      selectData(
+        i("ctx"),
+        Term.Eval("&state")
+      ).`...`
+    )
+  val returnOnError =
+    Term.If((i("resp") \\ "Diagnostics" \\ "HasError")())(Term.Ret())
+  val writeModelToData =
+    (i("resp") \\ "Diagnostics" \\ "Append")(
+      (i("resp") \\ "State" \\ "Set")(
+        i("ctx"),
+        Term.Eval("&state")
+      ).`...`
+    )
+  Term.FnDecl(
+    Some(("r", Ptr(implType))),
+    "Read",
+    List(
+      ("ctx", Direct(TypeIdent("context", "Context"))),
+      ("req", Direct(mode.readRequest)),
+      ("resp", Direct(mode.readResponse))
+    ),
+    Nil,
+    Term.Block(
+      (Term.Eval(stateDecl) ::
+        readDataToModel ::
+        returnOnError ::
+        mappings.appended(writeModelToData))*
+    )
+  )
+def i(name: String) = Term.Ident(name)
 
 object J {
 
@@ -622,9 +754,15 @@ sealed trait Term {
   def render(level: Int): String
 }
 sealed trait Stmt extends Term
-sealed trait Expr extends Term
+sealed trait Expr extends Stmt {
+  def `...`: Term.Spread = Term.Spread(this)
+}
 
 object Term {
+  case class Comment(str: String) extends Term {
+    def render(level: Int): String =
+      str.linesIterator.map(line => indent(level) + "// " + line).mkString("\n")
+  }
   case class LitBool(b: Boolean) extends Expr {
     def render(level: Int = 0): String = s"$b"
   }
@@ -644,6 +782,14 @@ object Term {
   }
   case class Select(paths: List[Ident] = Nil, path: Ident) extends Expr {
     def apply(args: Term*): Apply = Apply(this, args.toList)
+    def \\(selectee: String): Select =
+      Select(this.paths :+ path, Ident(selectee))
+    def \\(selectee: Ident): Select =
+      Select(this.paths :+ path, selectee)
+    def select(selectee: String): Select =
+      Select(this.paths :+ path, Ident(selectee))
+    def select(selectee: Ident): Select =
+      Select(this.paths :+ path, selectee)
     def render(level: Int): String =
       (paths :+ path).map(_.render(0)).mkString(".")
     def :=(rhs: Expr): Assign = Assign(this, rhs)
@@ -711,6 +857,9 @@ object Term {
   case object GNil extends Term {
     def render(level: Int): String = "nil"
   }
+  case class Spread(term: Term) extends Term {
+    def render(level: Int): String = term.render(level) + "..."
+  }
   case class Apply(sel: Select, args: List[Term]) extends Expr {
     def render(level: Int): String =
       s"${sel.render(level)}(${args.map(_.render(level)).mkString(", ")})"
@@ -764,12 +913,12 @@ object Term {
   case class Init(owner: TypeIdent, v: Attrs = Attrs.empty) extends Expr {
     def render(level: Int) = owner.fullName + v.render(level)
   }
-  case class If(cond: Eval, body: Block) extends Stmt {
+  case class If(cond: Expr, body: Block) extends Stmt {
     def render(level: Int = 0) =
       s"if ${cond.render(level)} " + body.render(level)
   }
   object If {
-    def apply(cond: Eval)(stmts: Stmt*): If = If(cond, Block(stmts*))
+    def apply(cond: Expr)(stmts: Stmt*): If = If(cond, Block(stmts*))
   }
 
   case class For(
@@ -951,21 +1100,20 @@ def generateModelMappingRec(
               case _                                 => "int32"
             }
             Term.Select(cast)(Term.Ident("data") \\ fieldName)
-          case i: IntegerType =>
-            i.format match
+          case int: IntegerType =>
+            int.format match
               case None =>
-                Term.Select("int32")(Term.Ident("data") \\ fieldName)
+                Term.Select("int32")(i("data") \\ fieldName)
               case Some("timestamp") =>
-                Term.Select("int64")(Term.Ident("data") \\ fieldName)
+                Term.Select("int64")(i("data") \\ fieldName)
               case _ =>
-                Term.Ident("data") \\ fieldName
+                i("data") \\ fieldName
           case (s: StringEnum) =>
             val cast =
               if nullable then "(*string)"
               else "string"
-            Term.Select(cast)(Term.Ident("data") \\ fieldName)
-          case _ =>
-            Term.Ident("data") \\ fieldName
+            Term.Select(cast)(i("data") \\ fieldName)
+          case _ => i("data") \\ fieldName
       property match
         case p @ (_: PrimitiveType | _: IntEnum | _: StringEnum) =>
           val typeMapping = leafTypeTranslation(p).get
@@ -995,13 +1143,13 @@ def generateModelMappingRec(
                 mode = mode,
                 schemaTypeNamespace = schemaTypeNamespace
               )
-              val ret = Term.ValDef(Term.Ident("ret"), Term.Init(modelType))
+              val ret = Term.ValDef(i("ret"), Term.Init(modelType))
               val objectMappingFunc_ = Term.FnDecl(
                 fname,
                 ("data", Direct(schemaType)) :: Nil,
                 List(Direct(modelType))
               )(
-                ((ret :: stmts) :+ Term.Ret(Term.Ident("ret")))*
+                ((ret :: stmts) :+ Term.Ret(i("ret")))*
               )
               (
                 fname,
@@ -1014,11 +1162,11 @@ def generateModelMappingRec(
             if nullable then
               Term.If(Term.Eval(s"${select.render(0)} != nil"))(
                 Term.ValDef(fieldName, Term.Eval(s"$f(*${select.render(0)})")),
-                Term.Ident(modelIdent) \\ fieldName := Term.Eval(s"&$fieldName")
+                i(modelIdent) \\ fieldName := Term.Eval(s"&$fieldName")
               ) :: Nil
             else
               Term.ValDef(fieldName, Term.Select(f)(select)) ::
-                (Term.Ident(modelIdent) \\ fieldName := Term.Eval(
+                (i(modelIdent) \\ fieldName := Term.Eval(
                   s"&$fieldName"
                 )) ::
                 Nil
@@ -1033,7 +1181,7 @@ def generateModelMappingRec(
             // for ...
             Term.For(
               ValDef(
-                List(Term.Ident.underscore, Term.Ident("element")),
+                List(Term.Ident.underscore, i("element")),
                 Term.Select("range")(
                   Term.Eval(s"$maybeDeref${select.render(0)}")
                 )
@@ -1042,12 +1190,12 @@ def generateModelMappingRec(
               (
                 Term.Select(elementsIdent) :=
                   Term.Select("append")(
-                    Term.Ident(elementsIdent),
+                    i(elementsIdent),
                     Term.Select(s"${t.fullName}Value")(args(1))
                   )
               ) :: Nil
             },
-            Term.Ident(modelIdent) \\ fieldName := Term.Select(elementsIdent)
+            i(modelIdent) \\ fieldName := Term.Select(elementsIdent)
           )
 
           val guarded_ = guard(select, nullable, (stmts_)*).toList
@@ -1072,13 +1220,13 @@ def generateModelMappingRec(
                 mode = mode,
                 schemaTypeNamespace = schemaTypeNamespace
               )
-              val ret = Term.ValDef(Term.Ident("ret"), Term.Init(modelType))
+              val ret = Term.ValDef(i("ret"), Term.Init(modelType))
               val objectMappingFunc_ = Term.FnDecl(
                 fname,
                 ("data", Direct(schemaType)) :: Nil,
                 List(Direct(modelType))
               )(
-                ((ret :: stmts) :+ Term.Ret(Term.Ident("ret")))*
+                ((ret :: stmts) :+ Term.Ret(i("ret")))*
               )
 
               (
@@ -1088,7 +1236,7 @@ def generateModelMappingRec(
               )
 
           val maybeDeref = if (nullable) "*" else ""
-          val elementsIdent = Term.Ident(s"${snake2Camel(name)}Elements")
+          val elementsIdent = i(s"${snake2Camel(name)}Elements")
           val stmts_ = List(
             Term.ValDef(
               elementsIdent,
@@ -1097,7 +1245,7 @@ def generateModelMappingRec(
             // for ...
             Term.For(
               ValDef(
-                List(Term.Ident.underscore, Term.Ident("element")),
+                List(Term.Ident.underscore, i("element")),
                 Term.Select("range")(
                   Term.Eval(s"$maybeDeref${select.render(0)}")
                 )
@@ -1108,7 +1256,7 @@ def generateModelMappingRec(
                   .Select("append")(elementsIdent, Term.Select(f)(args(1)))
               ) :: Nil
             },
-            Term.Ident(modelIdent) \\ fieldName := Term.Select(
+            i(modelIdent) \\ fieldName := Term.Select(
               Nil,
               elementsIdent
             )
@@ -1177,16 +1325,9 @@ def integration(args: String*) =
 
   // prelude
   println(miscGen(name, mode).map(_.render(0)).mkString("\n"))
+
   // datasource, resource
-  println(definitions.map(_.render(0)).mkString("\n"))
-  println(schemaDecl)
-
-  // CRUD impl
-  println(functions.map(_.render(0)).mkString("\n"))
-  // println(decl)
-  // println(stmts.map(_.render(0)).mkString("\n"))
-
-  // nested type adaptors
+  // nested type adaptor
   println(
     attrTypeFunRec(
       schema,
@@ -1195,6 +1336,21 @@ def integration(args: String*) =
       (Map.empty, Map.empty)
     )._2.map(_._2.render(0)).mkString("\n")
   )
+  // types
+  println(definitions.map(_.render(0)).mkString("\n"))
+  // schema function
+  println(schemaDecl)
+
+  // CRUD operation
+  println(functions.map(_.render(0)).mkString("\n"))
+  println(genRead(mode, name, decl, stmts).render(0))
+  println(
+    genMutationBoilerplates(mode, name, decl, stmts)
+      .map(_.render(0))
+      .mkString("\n")
+  )
+
+  // nested type adaptors
 
 def modelGen(schema: Json, name: String, mode: Mode): List[Term.StructDecl] =
   val modelName = modelNameConvention(name, mode = mode)
@@ -1263,7 +1419,7 @@ def miscGen(name: String, mode: Mode): List[Term.FnDecl] =
     ),
     Nil,
     Term.Block(
-      Term.Ident("resp") \\ "TypeName" :=
+      i("resp") \\ "TypeName" :=
         Term.Eval(s"req.ProviderTypeName + \"_${providerTypeName}\"")
     )
   )
@@ -1286,12 +1442,11 @@ def schemaGen(schema: Json, name: String, mode: Mode): Term.FnDecl =
     ),
     Nil,
     Term.Block(
-      Term.Ident("resp") \\ "Schema" :=
+      i("resp") \\ "Schema" :=
         Term.Init(
           TypeIdent("schema", "Schema"),
           Term.Attrs(
-            (
-              "Attributes",
+            "Attributes" ->
               Term.Init(
                 // FIXME: more type safety
                 TypeIdent("map[string]schema", "Attribute"),
@@ -1307,7 +1462,6 @@ def schemaGen(schema: Json, name: String, mode: Mode): Term.FnDecl =
                   )*
                 )
               )
-            )
           )
         )
     )
