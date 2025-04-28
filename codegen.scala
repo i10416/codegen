@@ -376,7 +376,7 @@ def genMutationBoilerplates(
             List(
               ("ctx", Direct(TypeIdent("context", "Context"))),
               ("req", Direct(TypeIdent(mode.namespace, action + "Request"))),
-              ("resp", Direct(TypeIdent(mode.namespace, action + "Response")))
+              ("resp", Ptr(TypeIdent(mode.namespace, action + "Response")))
             ),
             Nil,
             Term.Block(
@@ -392,7 +392,7 @@ def genMutationBoilerplates(
         List(
           ("ctx", Direct(TypeIdent("context", "Context"))),
           ("req", Direct(TypeIdent(mode.namespace, "Delete" + "Request"))),
-          ("resp", Direct(TypeIdent(mode.namespace, "Delete" + "Response")))
+          ("resp", Ptr(TypeIdent(mode.namespace, "Delete" + "Response")))
         ),
         Nil,
         Term.Block(
