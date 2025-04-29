@@ -371,7 +371,7 @@ def genMutationBoilerplates(
       val puts =
         for (action <- List("Create", "Update"))
           yield Term.FnDecl(
-            Some(("r", Ptr(implType))),
+            Some((Some("r"), Ptr(implType))),
             action,
             List(
               ("ctx", Direct(TypeIdent("context", "Context"))),
@@ -387,7 +387,7 @@ def genMutationBoilerplates(
             )
           )
       val del = Term.FnDecl(
-        Some(("r", Ptr(implType))),
+        Some((Some("r"), Ptr(implType))),
         "Delete",
         List(
           ("ctx", Direct(TypeIdent("context", "Context"))),
@@ -403,7 +403,7 @@ def genMutationBoilerplates(
         )
       ) :: Nil
       val imports = Term.FnDecl(
-        Some(("r", Ptr(implType))),
+        Some((Some("r"), Ptr(implType))),
         "ImportState",
         List(
           ("ctx", Direct(TypeIdent("context", "Context"))),
@@ -450,12 +450,12 @@ def genRead(
       ).`...`
     )
   Term.FnDecl(
-    Some(("r", Ptr(implType))),
+    Some((Some("r"), Ptr(implType))),
     "Read",
     List(
       ("ctx", Direct(TypeIdent("context", "Context"))),
       ("req", Direct(mode.readRequest)),
-      ("resp", Direct(mode.readResponse))
+      ("resp", Ptr(mode.readResponse))
     ),
     Nil,
     Term.Block(
@@ -829,7 +829,7 @@ object Term {
       s"$name ${tpe.fullName} $ts$ds"
   }
   case class FnDecl(
-      recv: Option[(String, TypeAnnot)],
+      recv: Option[(Option[String], TypeAnnot)],
       name: String,
       args: List[(String, TypeAnnot)],
       ret: List[TypeAnnot],
@@ -842,7 +842,8 @@ object Term {
         }
         .mkString(", ")
       val maybeRecv = recv match
-        case Some((recv, tpe)) => s" ($recv ${tpe.fullName})"
+        case Some((Some(recv), tpe)) => s" ($recv ${tpe.fullName})"
+        case Some((None, tpe)) => s" (${tpe.fullName})"
         case None              => ""
       val retPart = ret.map(_.fullName).mkString(", ")
       s"func$maybeRecv $name($argsPart) $retPart" + body.render(level)
@@ -1397,7 +1398,7 @@ def miscGen(name: String, mode: Mode): List[Term.FnDecl] =
   )
   val ctx = TypeIdent("context", "Context")
   val configure = Term.FnDecl(
-    Some(("r", Ptr(implType))),
+    Some((Some("r"), Ptr(implType))),
     "Configure",
     List(
       ("ctx", Direct(ctx)),
@@ -1410,7 +1411,7 @@ def miscGen(name: String, mode: Mode): List[Term.FnDecl] =
     )
   )
   val met = Term.FnDecl(
-    Some(("r", Ptr(implType))),
+    Some((Some("r"), Ptr(implType))),
     "Metadata",
     List(
       ("ctx", Direct(ctx)),
@@ -1433,7 +1434,7 @@ def schemaGen(schema: Json, name: String, mode: Mode): Term.FnDecl =
 
   val implType = TypeIdent(Nil, implName)
   val schemaFunc = Term.FnDecl(
-    Some(("_", Ptr(implType))),
+    Some((None, Ptr(implType))),
     "Schema",
     List(
       ("ctx", Direct(TypeIdent("context", "Context"))),
