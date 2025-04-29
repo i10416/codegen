@@ -253,6 +253,18 @@ private def renderAttributes(
                   "Validators",
                   Term.Eval(s"[]validator.String{$validator}")
                 ),
+            value.asIntEnum
+              .map: enums =>
+                val size = enums.format match
+                  case Some("int64"|"timestamp") => "int64"
+                  case _ => "int32"
+                val args = enums.`enum`.map(i => Term.Eval(i.toString()))
+                (i(s"${size}validator") \\ "OneOf")(args*) -> size
+              .map: (validator, size) =>
+                (
+                  "Validators",
+                  Term.Eval(s"[]validator.${size.capitalize}{${validator.render(0)}}")
+                ),
             value.asRef.map: ref =>
               (
                 "Attributes",
@@ -482,6 +494,9 @@ object J {
     def asStringEnum: Option[StringEnum] = this match
       case self: StringEnum => Some(self)
       case _                => None
+    def asIntEnum: Option[IntEnum] = this match
+      case self: IntEnum => Some(self)
+      case _ => None
     def asList: Option[ArrayDefinition] = this match
       case self: ArrayDefinition => Some(self)
       case _                     => None
@@ -698,7 +713,7 @@ object J {
       def tpe: Option[String] = Some(`type`)
     }
     case class AnyStructuralType(
-        value: Json,
+        schema: Json,
         description: Option[String],
         nullable: Option[Boolean]
     ) extends SchemaDefinition {
@@ -981,8 +996,9 @@ def generateModelsRec(
 
     property match
       case unnamedObject: ObjectType =>
-        ???
+        throw new Exception(s"Unexpected SchemaDefinition: ${unnamedObject} at ${path.map(_.fullName).mkString(" / ")}")
       case obj: AnyStructuralType =>
+        // FIXME
         history
       case ref: Reference =>
         val modelName = modelNameConvention(ref.derefName, mode = mode)
@@ -1050,7 +1066,7 @@ def generateModelsRec(
 
         history.updatedWith(model)(_.map(_ :+ field).orElse(Some(field :: Nil)))
       case schemaDefn =>
-        throw new Exception(s"Unexpected SchemaDefinition: ${schemaDefn}")
+        throw new Exception(s"Unexpected SchemaDefinition: ${schemaDefn} at ${path.map(_.fullName).mkString(" / ")}")
   }
 
 sealed trait TypeAnnot {
