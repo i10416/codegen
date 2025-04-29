@@ -43493,7 +43493,7 @@
         ],
         "type": "object",
         "properties": {
-          "Consent": {
+          "Consents": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/Consent"
@@ -44359,7 +44359,7 @@
         ],
         "type": "object",
         "properties": {
-          "TeamMember": {
+          "team_members": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/TeamMember"
