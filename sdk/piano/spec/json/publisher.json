@@ -12628,6 +12628,7 @@
         },
         "responses": {
           "200": {
+            "required": true,
             "description": "successful operation",
             "content": {
               "application/json": {
@@ -43489,7 +43490,7 @@
       },
       "ConsentArrayResult": {
         "required": [
-          "Consent"
+          "Consents"
         ],
         "type": "object",
         "properties": {
@@ -44355,7 +44356,7 @@
       },
       "TeamMemberArrayResult": {
         "required": [
-          "TeamMember"
+          "team_members"
         ],
         "type": "object",
         "properties": {

@@ -8346,6 +8346,7 @@ paths:
         required: false
       responses:
         '200':
+          required: true
           description: successful operation
           content:
             application/json:
@@ -33320,7 +33321,7 @@ components:
       additionalProperties: false
     ConsentArrayResult:
       required:
-        - Consent
+        - Consents
       type: object
       properties:
         Consents:
@@ -33903,7 +33904,7 @@ components:
       additionalProperties: false
     TeamMemberArrayResult:
       required:
-        - TeamMember
+        - team_members
       type: object
       properties:
         team_members:
