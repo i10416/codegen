@@ -33102,16 +33102,12 @@
       "PromoCode": {
         "required": [
           "assigned_email",
-          "claimed_date",
-          "claimed_user",
           "code",
           "create_by",
           "create_date",
           "deleted",
-          "last_original_price",
           "promo_code_id",
           "promotion_id",
-          "reserve_date",
           "state",
           "state_value",
           "update_by",
@@ -33133,6 +33129,7 @@
           },
           "assigned_email": {
             "type": "string",
+            "nullable": true,
             "description": "The assigned email"
           },
           "reserve_date": {
@@ -39115,16 +39112,12 @@
       "User": {
         "required": [
           "create_date",
-          "custom_fields",
           "display_name",
           "email",
           "first_name",
           "image1",
-          "last_login",
           "last_name",
-          "last_visit",
           "personal_name",
-          "reset_password_email_sent",
           "uid"
         ],
         "type": "object",
@@ -39151,6 +39144,7 @@
           },
           "image1": {
             "type": "string",
+            "nullable": true,
             "description": "The user's profile image"
           },
           "create_date": {
@@ -43276,7 +43270,8 @@
           },
           "description": {
             "type": "string",
-            "description": "The webhook status description"
+            "description": "The webhook status description",
+            "example": "Webhooks processing normally"
           }
         }
       },
@@ -44077,11 +44072,11 @@
       },
       "PromoCodeArrayResult": {
         "required": [
-          "PromoCode"
+          "data"
         ],
         "type": "object",
         "properties": {
-          "PromoCode": {
+          "data": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/PromoCode"
@@ -44092,7 +44087,7 @@
       },
       "PromotionResult": {
         "required": [
-          "Promotion"
+          "promotion"
         ],
         "type": "object",
         "properties": {
@@ -44116,11 +44111,11 @@
       },
       "PromotionArrayResult": {
         "required": [
-          "Promotion"
+          "promotions"
         ],
         "type": "object",
         "properties": {
-          "Promotion": {
+          "promotions": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/Promotion"
@@ -44131,11 +44126,11 @@
       },
       "ResourceArrayResult": {
         "required": [
-          "Resource"
+          "resources"
         ],
         "type": "object",
         "properties": {
-          "Resource": {
+          "resources": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/Resource"
@@ -44215,11 +44210,11 @@
       },
       "UserArrayResult": {
         "required": [
-          "User"
+          "users"
         ],
         "type": "object",
         "properties": {
-          "User": {
+          "users": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/User"
@@ -44749,11 +44744,11 @@
       },
       "WebhookSettingsResult": {
         "required": [
-          "WebhookSettings"
+          "webhook_settings"
         ],
         "type": "object",
         "properties": {
-          "WebhookSettings": {
+          "webhook_settings": {
             "$ref": "#/components/schemas/WebhookSettings"
           }
         },
@@ -44761,11 +44756,11 @@
       },
       "WebhookStatusResult": {
         "required": [
-          "WebhookStatus"
+          "webhook_status"
         ],
         "type": "object",
         "properties": {
-          "WebhookStatus": {
+          "webhook_status": {
             "$ref": "#/components/schemas/WebhookStatus"
           }
         },
