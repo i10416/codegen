@@ -1658,6 +1658,9 @@ components:
           type: string
     PublisherCustomFieldResponse:
       type: object
+      required:
+        - name
+        - value
       properties:
         name:
           type: string
@@ -1735,10 +1738,21 @@ components:
           type: string
     PublisherUserProfileResponse:
       type: object
+      required:
+        - first_name
+        - last_name
+        - uid
+        - email
+        - phone
+        - create_date
+        - reset_password_email_sent
+        - password
+        - custom_fields
+        - aliases
       properties:
-        firstName:
+        first_name:
           type: string
-        lastName:
+        last_name:
           type: string
         uid:
           type: string
@@ -1746,13 +1760,15 @@ components:
           type: string
         phone:
           type: string
-        createDate:
+          nullable: true
+        create_date:
           type: integer
           format: int64
         reset_password_email_sent:
           type: boolean
         password:
           type: string
+          example: "has-passwords"
         custom_fields:
           type: array
           items:
