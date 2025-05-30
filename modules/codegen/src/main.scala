@@ -1,76 +1,20 @@
-//> using dep io.circe::circe-core::0.14.13
-//> using dep io.circe::circe-parser::0.14.13
-//> using dep io.circe::circe-optics::0.15.0
-//> using dep org.typelevel::cats-core::2.13.0
+package codegen
 
-import J.SchemaDefinition
-import J.SchemaDefinition.AnyStructuralType
-import J.SchemaDefinition.ArrayDefinition
-import J.SchemaDefinition.BoolType
-import J.SchemaDefinition.IntEnum
-import J.SchemaDefinition.IntegerType
-import J.SchemaDefinition.NumberType
-import J.SchemaDefinition.ObjectType
-import J.SchemaDefinition.PrimitiveType
-import J.SchemaDefinition.Reference
-import J.SchemaDefinition.StringEnum
-import J.SchemaDefinition.StringType
-import Mode.DataSource
-import Mode.Resource
-import Term.ValDef
-import TypeAnnot.Direct
-import TypeAnnot.Ptr
-import cats.data.*
-import cats.syntax.all.*
-import cats.syntax.alternative.*
+import codegen.naming.*
+import codegen.text.*
 import io.circe.*
-import io.circe.Decoder.Result
-import io.circe.DecodingFailure.Reason
-import io.circe.Printer
-import io.circe.derivation.Configuration
-import io.circe.derivation.ConfiguredCodec
-import io.circe.derivation.ConfiguredEnumCodec
-import io.circe.optics.*
-import io.circe.optics.JsonPath.*
-import io.circe.parser
-import io.circe.syntax.*
+import jsonschema.SchemaDefinition
+import jsonschema.SchemaDefinition.*
+import jsonschema.resolve
+import pseudogo.*
 
 import java.nio.file.Files
 import java.nio.file.Path
 
-private def resolve(schema: Json, ref: Reference): ObjectType =
-  root.components.schemas
-    .selectDynamic(ref.derefName)
-    .json
-    .getOption(schema)
-    .get
-    .as[ObjectType] match
-    case Left(e)    => throw new Exception(e)
-    case Right(obj) => obj
+import Mode.DataSource
+import Mode.Resource
+import Term.ValDef
 
-def schemaNamingConvention(schema: Json, value: SchemaDefinition): String =
-  value match
-    case _: IntEnum    => "Int32Attribute"
-    case _: StringEnum => "StringAttribute"
-    case _: StringType => "StringAttribute"
-    case _: BoolType   => "BoolAttribute"
-    case i: IntegerType =>
-      if i.format.exists(_ == "int32") then "Int32Attribute"
-      else if i.format.exists(i => Set("int64", "timestamp").contains(i)) then
-        "Int64Attribute"
-      else "Int32Attribute"
-    case n: NumberType =>
-      if n.format.exists(_ == "float") then "Float32Attribute"
-      else if n.format.exists(_ == "double") then "Float64Attribute"
-      else "Float32Attribute"
-    case _: Reference =>
-      "SingleNestedAttribute"
-    case l: ArrayDefinition =>
-      if l.nested then "ListNestedAttribute" else "ListAttribute"
-    case obj: ObjectType if obj.nested        => "SingleNestedAttribute"
-    case _: ObjectType | _: AnyStructuralType => "ObjectAttribute"
-
-def indent(level: Int): String = " " * (2 * level)
 
 sealed trait Mode {
   def modelNameSuffix: String = this match
@@ -98,8 +42,6 @@ object Mode {
   case object Resource extends Mode
 }
 
-def attrTypeFuncNameConvention(typeName: String): String =
-  s"${typeName}AttrType"
 
 def attrTypeFunRec(
     schema: Json,
@@ -190,7 +132,7 @@ def attrTypeFunRec(
     None,
     fName,
     Nil,
-    List(Direct(TypeIdent("attr", "Type"))),
+    List(TypeIdent("attr", "Type")),
     Term.Block(
       Term.Ret(
         Term.Init(
@@ -256,14 +198,16 @@ private def renderAttributes(
             value.asIntEnum
               .map: enums =>
                 val size = enums.format match
-                  case Some("int64"|"timestamp") => "int64"
-                  case _ => "int32"
+                  case Some("int64" | "timestamp") => "int64"
+                  case _                           => "int32"
                 val args = enums.`enum`.map(i => Term.Eval(i.toString()))
                 (i(s"${size}validator") \\ "OneOf")(args*) -> size
               .map: (validator, size) =>
                 (
                   "Validators",
-                  Term.Eval(s"[]validator.${size.capitalize}{${validator.render(0)}}")
+                  Term.Eval(
+                    s"[]validator.${size.capitalize}{${validator.render(0)}}"
+                  )
                 ),
             value.asRef.map: ref =>
               (
@@ -386,8 +330,8 @@ def genMutationBoilerplates(
             Some((Some("r"), Ptr(implType))),
             action,
             List(
-              ("ctx", Direct(TypeIdent("context", "Context"))),
-              ("req", Direct(TypeIdent(mode.namespace, action + "Request"))),
+              ("ctx", TypeIdent("context", "Context")),
+              ("req", TypeIdent(mode.namespace, action + "Request")),
               ("resp", Ptr(TypeIdent(mode.namespace, action + "Response")))
             ),
             Nil,
@@ -402,8 +346,8 @@ def genMutationBoilerplates(
         Some((Some("r"), Ptr(implType))),
         "Delete",
         List(
-          ("ctx", Direct(TypeIdent("context", "Context"))),
-          ("req", Direct(TypeIdent(mode.namespace, "Delete" + "Request"))),
+          ("ctx", TypeIdent("context", "Context")),
+          ("req", TypeIdent(mode.namespace, "Delete" + "Request")),
           ("resp", Ptr(TypeIdent(mode.namespace, "Delete" + "Response")))
         ),
         Nil,
@@ -418,11 +362,11 @@ def genMutationBoilerplates(
         Some((Some("r"), Ptr(implType))),
         "ImportState",
         List(
-          ("ctx", Direct(TypeIdent("context", "Context"))),
-          ("req", Direct(TypeIdent(mode.namespace, "ImportState" + "Request"))),
+          ("ctx", TypeIdent("context", "Context")),
+          ("req", TypeIdent(mode.namespace, "ImportState" + "Request")),
           (
             "resp",
-            Direct(TypeIdent(mode.namespace, "ImportState" + "Response"))
+            TypeIdent(mode.namespace, "ImportState" + "Response")
           )
         ),
         Nil,
@@ -465,8 +409,8 @@ def genRead(
     Some((Some("r"), Ptr(implType))),
     "Read",
     List(
-      ("ctx", Direct(TypeIdent("context", "Context"))),
-      ("req", Direct(mode.readRequest)),
+      ("ctx", TypeIdent("context", "Context")),
+      ("req", mode.readRequest),
       ("resp", Ptr(mode.readResponse))
     ),
     Nil,
@@ -477,508 +421,7 @@ def genRead(
         mappings.appended(writeModelToData))*
     )
   )
-def i(name: String) = Term.Ident(name)
 
-object J {
-
-  sealed trait SchemaDefinition {
-    def explicitNullable: Boolean = nullable.getOrElse(false)
-    def nullable: Option[Boolean]
-    def tpe: Option[String]
-    def asRef: Option[Reference] = this match
-      case self: Reference => Some(self)
-      case _               => None
-    def asObject: Option[ObjectType] = this match
-      case self: ObjectType => Some(self)
-      case _                => None
-    def asStringEnum: Option[StringEnum] = this match
-      case self: StringEnum => Some(self)
-      case _                => None
-    def asIntEnum: Option[IntEnum] = this match
-      case self: IntEnum => Some(self)
-      case _ => None
-    def asList: Option[ArrayDefinition] = this match
-      case self: ArrayDefinition => Some(self)
-      case _                     => None
-
-    def description: Option[String]
-    def isRef: Boolean = this match
-      case _: Reference => true
-      case _            => false
-    def isObject: Boolean = this match
-      case _: ObjectType => true
-      case _             => false
-    def isObjectLike: Boolean = this match
-      case _: ObjectType                                               => true
-      case _: Reference                                                => true
-      case _: AnyStructuralType                                        => true
-      case _: (IntEnum | StringEnum | PrimitiveType | ArrayDefinition) => false
-    def isList: Boolean = this match
-      case _: ArrayDefinition => true
-      case _                  => false
-
-    def nested: Boolean = this match
-      case _: IntEnum | _: StringEnum | _: PrimitiveType => false
-      case obj: ObjectType =>
-        obj.properties.values.exists(schema => schema.isObjectLike)
-      case _: AnyStructuralType  => false
-      case _: Reference          => true
-      case list: ArrayDefinition => list.items.nested
-
-    def isLeaf: Boolean = this match
-      case _: IntEnum | _: StringEnum | _: PrimitiveType => true
-      case _                                             => false
-  }
-  object SchemaDefinition {
-    sealed trait EnumDefinition extends SchemaDefinition
-    implicit val codec: Decoder[SchemaDefinition] =
-      new Decoder[SchemaDefinition] {
-        def apply(c: HCursor): Result[SchemaDefinition] =
-          (c.get[String]("$ref"), c.get[String]("type")) match
-            case (Right(ref), Left(_)) => Decoder[Reference].apply(c)
-            case (Left(_), Right(tpe)) =>
-              if tpe == "array" then Decoder[ArrayDefinition].apply(c)
-              else if tpe == "object" then
-                if c.downField("properties").succeeded then
-                  Decoder[ObjectType].apply(c)
-                else
-                  Right(
-                    AnyStructuralType(
-                      c.value,
-                      c.get[String]("description").toOption,
-                      c.get[Boolean]("nullable").toOption
-                    )
-                  )
-              else if tpe == "string" then
-                (Decoder[StringEnum].widen <+> Decoder[StringType].widen)
-                  .apply(c)
-              else if tpe == "integer" then
-                (Decoder[IntEnum].widen <+> Decoder[IntegerType].widen).apply(c)
-              else
-                Decoder[
-                  PrimitiveType
-                ].apply(c)
-            case (Left(_), Left(_)) =>
-              Left(
-                DecodingFailure(
-                  Reason.CustomReason("neither type nor $ref found"),
-                  c.root
-                )
-              )
-            case (Right(_), Right(_)) =>
-              Left(
-                DecodingFailure(
-                  Reason.CustomReason(
-                    "property must be either one of type or reference. Not both."
-                  ),
-                  c.root
-                )
-              )
-      }
-    case class IntEnum(
-        `type`: String,
-        description: Option[String],
-        format: Option[String],
-        `enum`: List[Int],
-        example: Option[String],
-        nullable: Option[Boolean]
-    ) extends EnumDefinition derives Codec {
-      def tpe: Option[String] = Some(`type`)
-    }
-
-    case class StringEnum(
-        `type`: String,
-        description: Option[String],
-        format: Option[String],
-        `enum`: List[String],
-        example: Option[String],
-        nullable: Option[Boolean]
-    ) extends EnumDefinition derives Codec {
-      def tpe: Option[String] = Some(`type`)
-
-    }
-
-    case class IntegerType(
-        `type`: String,
-        format: Option[String],
-        description: Option[String],
-        example: Option[Int],
-        nullable: Option[Boolean]
-    ) extends PrimitiveType {
-      def tpe: Option[String] = Some(`type`)
-    }
-    object IntegerType {
-      implicit val codec: Codec[IntegerType] =
-        Codec.forProduct5[IntegerType, String, Option[String], Option[
-          String
-        ], Option[Int], Option[Boolean]](
-          "type",
-          "format",
-          "description",
-          "example",
-          "nullable"
-        )(IntegerType.apply(_, _, _, _, _))(p =>
-          (p.`type`, p.format, p.description, p.example, p.nullable)
-        )
-    }
-    case class NumberType(
-        `type`: String,
-        format: Option[String],
-        description: Option[String],
-        example: Option[Double],
-        nullable: Option[Boolean]
-    ) extends PrimitiveType {
-      def tpe: Option[String] = Some(`type`)
-    }
-    object NumberType {
-      implicit val codec: Codec[NumberType] =
-        Codec.forProduct5[NumberType, String, Option[String], Option[
-          String
-        ], Option[Double], Option[Boolean]](
-          "type",
-          "format",
-          "description",
-          "example",
-          "nullable"
-        )(NumberType.apply(_, _, _, _, _))(p =>
-          (p.`type`, p.format, p.description, p.example, p.nullable)
-        )
-    }
-
-    case class StringType(
-        `type`: String,
-        format: Option[String],
-        description: Option[String],
-        example: Option[String],
-        nullable: Option[Boolean]
-    ) extends PrimitiveType {
-      def tpe: Option[String] = Some(`type`)
-    }
-    object StringType {
-      implicit val codec: Codec[StringType] =
-        Codec.forProduct5[StringType, String, Option[String], Option[
-          String
-        ], Option[String], Option[Boolean]](
-          "type",
-          "format",
-          "description",
-          "example",
-          "nullable"
-        )(StringType.apply(_, _, _, _, _))(p =>
-          (p.`type`, p.format, p.description, p.example, p.nullable)
-        )
-    }
-    case class BoolType(
-        `type`: String,
-        description: Option[String],
-        nullable: Option[Boolean]
-    ) extends PrimitiveType {
-      def tpe: Option[String] = Some(`type`)
-    }
-    object BoolType {
-      implicit val codec: Codec[BoolType] =
-        Codec.forProduct3[BoolType, String, Option[String], Option[Boolean]](
-          "type",
-          "description",
-          "nullable"
-        )(BoolType.apply(_, _, _))(p => (p.`type`, p.description, p.nullable))
-    }
-
-    sealed trait PrimitiveType extends SchemaDefinition
-    object PrimitiveType {
-      implicit val de: Decoder[PrimitiveType] = new Decoder[PrimitiveType] {
-        def apply(c: HCursor): Result[PrimitiveType] =
-          c.get[String]("type") match {
-            case Left(value)      => Left(value)
-            case Right("integer") => Codec[IntegerType].decodeJson(c.value)
-            case Right("number")  => Codec[NumberType].decodeJson(c.value)
-            case Right("string")  => Codec[StringType].decodeJson(c.value)
-            case Right("boolean") => Codec[BoolType].decodeJson(c.value)
-          }
-      }
-    }
-    case class ObjectType(
-        `type`: String,
-        description: Option[String],
-        example: Option[String],
-        required: Option[List[String]],
-        properties: Map[String, SchemaDefinition],
-        nullable: Option[Boolean]
-    ) extends SchemaDefinition derives Decoder {
-      def strictPresence(key: String): Boolean =
-        properties.keySet.contains(key) &&
-          required.getOrElse(Nil).contains(key) &&
-          properties(key).nullable.forall(!_)
-
-      def tpe: Option[String] = Some(`type`)
-    }
-    case class AnyStructuralType(
-        schema: Json,
-        description: Option[String],
-        nullable: Option[Boolean]
-    ) extends SchemaDefinition {
-      def tpe: Option[String] = Some("object")
-    }
-
-    case class Reference(ref: String, nullable: Option[Boolean])
-        extends SchemaDefinition {
-      def derefName: String = ref.stripPrefix("#/components/schemas/")
-      def description: Option[String] = None
-      def tpe: Option[String] = None
-    }
-    object Reference {
-      def fromName(name: String, nullable: Option[Boolean] = None): Reference =
-        Reference(s"#/components/schemas/$name", nullable)
-      implicit val codec: Codec[Reference] =
-        Codec.forProduct2[Reference, String, Option[Boolean]](
-          "$ref",
-          "nullable"
-        )(Reference(_, _))(p => (p.ref, p.nullable))
-    }
-
-    case class ArrayDefinition(
-        `type`: String,
-        items: SchemaDefinition,
-        nullable: Option[Boolean]
-    ) extends SchemaDefinition derives Decoder {
-      def description: Option[String] = None
-
-      def tpe: Option[String] = Some(`type`)
-
-    }
-  }
-}
-
-def snake2Camel(str: String) =
-  val elements = str.split("_")
-  val (head, tail) = (elements.head, elements.tail)
-  if tail.isEmpty then head
-  else head + tail.map(_.capitalize).mkString
-
-def snake2UpperCamel(str: String) = snake2Camel(str).capitalize
-
-final case class TypeIdent(namespace: List[String], shortName: String) {
-  def fullName = (namespace :+ shortName).mkString(".")
-}
-object TypeIdent {
-  def apply(ns: String, shortName: String): TypeIdent =
-    TypeIdent(ns :: Nil, shortName)
-}
-
-sealed trait Term {
-  def render(level: Int): String
-}
-sealed trait Stmt extends Term
-sealed trait Expr extends Stmt {
-  def `...`: Term.Spread = Term.Spread(this)
-  def asRef: Term.AsRef = Term.AsRef(this)
-}
-
-object Term {
-  case class AsRef(e: Expr) extends Term {
-    def render(level: Int): String = "&" + e.render(level)
-  }
-
-  case class LitBool(b: Boolean) extends Expr {
-    def render(level: Int = 0): String = s"$b"
-  }
-  case class LitStr(s: String) extends Expr {
-    def render(level: Int = 0): String = q(s)
-  }
-  case class Ident(name: String) extends Term {
-    def selected: Select = Select(Nil, this)
-    def render(level: Int = 0): String = name
-    def select(selectee: String): Select = Select(List(this), Ident(selectee))
-    def select(selectee: Ident): Select = Select(List(this), selectee)
-    def \\(selectee: Ident): Select = Select(List(this), selectee)
-    def \\(selectee: String): Select = Select(List(this), Ident(selectee))
-  }
-  object Ident {
-    val underscore = Ident("_")
-  }
-  case class Select(paths: List[Ident] = Nil, path: Ident) extends Expr {
-    def apply(args: Term*): Apply = Apply(this, args.toList)
-    def \\(selectee: String): Select =
-      Select(this.paths :+ path, Ident(selectee))
-    def \\(selectee: Ident): Select =
-      Select(this.paths :+ path, selectee)
-    def select(selectee: String): Select =
-      Select(this.paths :+ path, Ident(selectee))
-    def select(selectee: Ident): Select =
-      Select(this.paths :+ path, selectee)
-    def render(level: Int): String =
-      (paths :+ path).map(_.render(0)).mkString(".")
-    def :=(rhs: Expr): Assign = Assign(this, rhs)
-  }
-  object Select {
-    def apply(paths: String*): Select =
-      paths.toList match
-        case Nil         => throw new Exception("paths must not be empty")
-        case head :: Nil => Ident(head).selected
-        case head :: remains =>
-          Select((head :: remains.init).map(Ident(_)), Ident(remains.last))
-  }
-
-  case class StructDecl(
-      name: TypeIdent,
-      fields: List[Field]
-  ) extends Term {
-    def render(level: Int): String =
-      (
-        List(s"type ${name.shortName} struct {") ::
-          fields.map(field => indent(1) + field.render(0)) ::
-          List("}") ::
-          Nil
-      ).flatten.mkString("\n")
-  }
-  case class Field(
-      name: String,
-      tpe: TypeAnnot,
-      tags: List[(String, String)],
-      docs: Option[String]
-  ) extends Term {
-    def render(level: Int): String =
-      val ts =
-        tags.map { case (key, value) => s"`$key:${q(value)}`" }.mkString(" ")
-      val ds = docs.fold("")(" // " + _)
-      s"$name ${tpe.fullName} $ts$ds"
-  }
-  case class FnDecl(
-      recv: Option[(Option[String], TypeAnnot)],
-      name: String,
-      args: List[(String, TypeAnnot)],
-      ret: List[TypeAnnot],
-      body: Block
-  ) {
-    def render(level: Int = 0): String =
-      val argsPart = args
-        .map { case (ident, tpe) =>
-          s"$ident ${tpe.fullName}"
-        }
-        .mkString(", ")
-      val maybeRecv = recv match
-        case Some((Some(recv), tpe)) => s" ($recv ${tpe.fullName})"
-        case Some((None, tpe)) => s" (${tpe.fullName})"
-        case None              => ""
-      val retPart = ret.map(_.fullName).mkString(", ")
-      s"func$maybeRecv $name($argsPart) $retPart" + body.render(level)
-  }
-  object FnDecl {
-    def apply(
-        name: String,
-        args: List[(String, TypeAnnot)],
-        ret: List[TypeAnnot] = Nil
-    )(body: Stmt*): FnDecl =
-      FnDecl(None, name, args, ret, Block(body*))
-  }
-  case object GNil extends Term {
-    def render(level: Int): String = "nil"
-  }
-  case class Spread(term: Term) extends Term {
-    def render(level: Int): String = term.render(level) + "..."
-  }
-  case class Apply(sel: Select, args: List[Term]) extends Expr {
-    def render(level: Int): String =
-      s"${sel.render(level)}(${args.map(_.render(level)).mkString(", ")})"
-  }
-
-  case class Ret(term: Option[Term] = None) extends Stmt {
-    def render(level: Int = 0): String =
-      term match
-        case Some(term) => s"return ${term.render(level)}"
-        case None       => "return"
-  }
-  object Ret {
-    def apply(term: Term): Ret = Ret(Some(term))
-  }
-
-  case class ValDef(lhs: List[Ident], rhs: Expr) extends Stmt {
-    def render(level: Int = 0): String =
-      s"${lhs.map(_.render(0)).mkString(", ")} := ${rhs.render(level)}"
-  }
-  extension (lhs: List[Ident]) def :=(rhs: Expr): ValDef = ValDef(lhs, rhs)
-  object ValDef {
-    def apply(lhs: String, rhs: Expr): ValDef = ValDef(Ident(lhs) :: Nil, rhs)
-    def apply(lhs: Ident, rhs: Expr): ValDef = ValDef(lhs :: Nil, rhs)
-  }
-  case class Assign(lhs: Select, rhs: Expr) extends Stmt {
-    def render(level: Int = 0): String =
-      s"${lhs.render(level)} = ${rhs.render(level)}"
-  }
-  case class Attrs(attrs: (String, Expr)*) extends Term {
-    def ++(another: Attrs): Attrs = Attrs((this.attrs ++ another.attrs)*)
-    def render(level: Int = 0): String =
-      if attrs.isEmpty then "{}"
-      else
-        List(
-          "{",
-          attrs
-            .map { case (name, value) =>
-              indent(level + 1) + s"$name: " + value.render(level + 1)
-            }
-            .mkString("", ",\n", ","),
-          indent(level) + "}"
-        ).mkString("\n")
-  }
-  object Attrs {
-    def empty = Attrs()
-  }
-  sealed trait Attr extends Term
-  case class Eval(v: String) extends Expr {
-    def render(level: Int) = v
-  }
-  case class Init(owner: TypeIdent, v: Attrs = Attrs.empty) extends Expr {
-    def render(level: Int) = owner.fullName + v.render(level)
-  }
-  case class If(cond: Expr, body: Block) extends Stmt {
-    def render(level: Int = 0) =
-      s"if ${cond.render(level)} " + body.render(level)
-  }
-  object If {
-    def apply(cond: Expr)(stmts: Stmt*): If = If(cond, Block(stmts*))
-  }
-
-  case class For(
-      valdef: ValDef,
-      cond: Option[(List[Ident] => Term)] = None,
-      op: Option[(List[Ident] => Stmt)] = None
-  )(body: List[Ident] => List[Stmt])
-      extends Stmt {
-    def render(level: Int): String =
-      val forPart = List(
-        Some(s"for ${valdef.render(level)}"),
-        cond.map(f => f(valdef.lhs).render(level)),
-        op.map(f => f(valdef.lhs).render(level))
-      ).flatten.mkString("; ")
-      val blc = Block(body(valdef.lhs)*)
-      s"$forPart " + blc.render(level)
-  }
-
-  case class Block(entries: Stmt*) extends Term {
-    def render(level: Int = 0): String =
-      List(
-        "{",
-        entries
-          .map { entry =>
-            indent(level + 1) + entry.render(level + 1)
-          }
-          .mkString("\n"),
-        indent(level) + "}"
-      ).mkString("\n")
-  }
-}
-
-def modelNameConvention(
-    schemaName: String,
-    owner: Option[TypeIdent] = None,
-    mode: Mode
-): TypeIdent =
-  TypeIdent(
-    Nil,
-    owner.fold("")(_.shortName) + snake2UpperCamel(
-      schemaName
-    ) + mode.modelNameSuffix
-  )
 def generateModelsRec(
     schema: Json,
     model: TypeIdent,
@@ -996,7 +439,9 @@ def generateModelsRec(
 
     property match
       case unnamedObject: ObjectType =>
-        throw new Exception(s"Unexpected SchemaDefinition: ${unnamedObject} at ${path.map(_.fullName).mkString(" / ")}")
+        throw new Exception(
+          s"Unexpected SchemaDefinition: ${unnamedObject} at ${path.map(_.fullName).mkString(" / ")}"
+        )
       case obj: AnyStructuralType =>
         // FIXME
         history
@@ -1021,7 +466,7 @@ def generateModelsRec(
         val field =
           Term.Field(
             fieldName,
-            TypeAnnot.Slice(leafTypeTranslation(items).get),
+            Slice(leafTypeTranslation(items).get),
             fieldOptions,
             docs
           )
@@ -1031,7 +476,7 @@ def generateModelsRec(
           modelNameConvention(fieldName, Some(model), mode = mode)
         val field = Term.Field(
           fieldName,
-          TypeAnnot.Slice(syntheticName),
+          Slice(syntheticName),
           fieldOptions,
           docs
         )
@@ -1047,7 +492,7 @@ def generateModelsRec(
         val modelName = modelNameConvention(ref.derefName, mode = mode)
 
         val field =
-          Term.Field(fieldName, TypeAnnot.Slice(modelName), fieldOptions, docs)
+          Term.Field(fieldName, Slice(modelName), fieldOptions, docs)
         generateModelsRec(
           schema,
           modelName,
@@ -1059,27 +504,17 @@ def generateModelsRec(
       case leaf: (IntEnum | StringEnum | PrimitiveType) =>
         val field = Term.Field(
           fieldName,
-          Direct(leafTypeTranslation(leaf).get),
+          leafTypeTranslation(leaf).get,
           fieldOptions,
           docs
         )
 
         history.updatedWith(model)(_.map(_ :+ field).orElse(Some(field :: Nil)))
       case schemaDefn =>
-        throw new Exception(s"Unexpected SchemaDefinition: ${schemaDefn} at ${path.map(_.fullName).mkString(" / ")}")
+        throw new Exception(
+          s"Unexpected SchemaDefinition: ${schemaDefn} at ${path.map(_.fullName).mkString(" / ")}"
+        )
   }
-
-sealed trait TypeAnnot {
-  def fullName: String = this match
-    case Ptr(tpe)             => s"*${tpe.fullName}"
-    case Direct(tpe)          => s"${tpe.fullName}"
-    case TypeAnnot.Slice(tpe) => s"[]${tpe.fullName}"
-}
-object TypeAnnot {
-  case class Ptr(tpe: TypeIdent) extends TypeAnnot
-  case class Direct(tpe: TypeIdent) extends TypeAnnot
-  case class Slice(tpe: TypeIdent) extends TypeAnnot
-}
 
 def propertyCanBeAbsent(
     owner: ObjectType,
@@ -1164,8 +599,8 @@ def generateModelMappingRec(
               val ret = Term.ValDef(i("ret"), Term.Init(modelType))
               val objectMappingFunc_ = Term.FnDecl(
                 fname,
-                ("data", Direct(schemaType)) :: Nil,
-                List(Direct(modelType))
+                ("data", schemaType) :: Nil,
+                List(modelType)
               )(
                 ((ret :: stmts) :+ Term.Ret(i("ret")))*
               )
@@ -1241,8 +676,8 @@ def generateModelMappingRec(
               val ret = Term.ValDef(i("ret"), Term.Init(modelType))
               val objectMappingFunc_ = Term.FnDecl(
                 fname,
-                ("data", Direct(schemaType)) :: Nil,
-                List(Direct(modelType))
+                ("data", schemaType) :: Nil,
+                List(modelType)
               )(
                 ((ret :: stmts) :+ Term.Ret(i("ret")))*
               )
@@ -1384,22 +819,6 @@ def modelGen(schema: Json, name: String, mode: Mode): List[Term.StructDecl] =
     Term.StructDecl(name, fields)
   }.toList
 
-import scala.collection.mutable.ListBuffer
-
-def camelToSnake(str: String) = camelToSnakeRec(str)
-
-private def camelToSnakeRec(
-    str: String,
-    parts: ListBuffer[String] = ListBuffer.empty
-): String =
-  val uncapitalized = str.take(1).toLowerCase() + str.drop(1)
-  if str.startsWith("_") then camelToSnakeRec(str.drop(1), parts)
-  else
-    val (part, remains) =
-      (uncapitalized.takeWhile(_.isLower), uncapitalized.dropWhile(_.isLower))
-    if remains.isEmpty() then (parts :+ part).map(_.toLowerCase()).mkString("_")
-    else camelToSnakeRec(remains, parts.appended(part))
-
 def miscGen(name: String, mode: Mode): List[Term.FnDecl] =
   val implName = mode match
     case DataSource => name + "DataSource"
@@ -1409,7 +828,7 @@ def miscGen(name: String, mode: Mode): List[Term.FnDecl] =
   val providerTypeName = camelToSnake(name)
 
   val ret = mode.implementee
-  val constr = Term.FnDecl(s"New$implName", Nil, List(Direct(ret)))(
+  val constr = Term.FnDecl(s"New$implName", Nil, List(ret))(
     Term.Ret(Term.Init(implType).asRef)
   )
   val ctx = TypeIdent("context", "Context")
@@ -1417,8 +836,8 @@ def miscGen(name: String, mode: Mode): List[Term.FnDecl] =
     Some((Some("r"), Ptr(implType))),
     "Configure",
     List(
-      ("ctx", Direct(ctx)),
-      ("req", Direct(mode.configureRequest)),
+      ("ctx", ctx),
+      ("req", mode.configureRequest),
       ("resp", Ptr(mode.configureResponse))
     ),
     Nil,
@@ -1430,8 +849,8 @@ def miscGen(name: String, mode: Mode): List[Term.FnDecl] =
     Some((Some("r"), Ptr(implType))),
     "Metadata",
     List(
-      ("ctx", Direct(ctx)),
-      ("req", Direct(mode.metadataRequest)),
+      ("ctx", ctx),
+      ("req", mode.metadataRequest),
       ("resp", Ptr(mode.metadataResponse))
     ),
     Nil,
@@ -1453,8 +872,8 @@ def schemaGen(schema: Json, name: String, mode: Mode): Term.FnDecl =
     Some((None, Ptr(implType))),
     "Schema",
     List(
-      ("ctx", Direct(TypeIdent("context", "Context"))),
-      ("req", Direct(mode.schemaRequest)),
+      ("ctx", TypeIdent("context", "Context")),
+      ("req", mode.schemaRequest),
       ("resp", Ptr(mode.schemaResponse))
     ),
     Nil,
@@ -1485,7 +904,6 @@ def schemaGen(schema: Json, name: String, mode: Mode): Term.FnDecl =
   )
   schemaFunc
 
-def q(s: String): String = s"\"$s\""
 def mappingsGen(
     schema: Json,
     name: String,
