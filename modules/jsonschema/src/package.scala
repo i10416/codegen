@@ -231,6 +231,8 @@ object SchemaDefinition {
           case Right("number")  => Codec[NumberType].decodeJson(c.value)
           case Right("string")  => Codec[StringType].decodeJson(c.value)
           case Right("boolean") => Codec[BoolType].decodeJson(c.value)
+          case Right(tpe) =>
+            Left(DecodingFailure(s"Unexpected type $tpe", c.history))
         }
     }
   }

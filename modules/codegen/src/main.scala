@@ -1,5 +1,6 @@
 package codegen
 
+import codegen.cli.CodegenCommands
 import codegen.naming.*
 import codegen.text.*
 import io.circe.*
@@ -14,7 +15,6 @@ import java.nio.file.Path
 import Mode.DataSource
 import Mode.Resource
 import Term.ValDef
-
 
 sealed trait Mode {
   def modelNameSuffix: String = this match
@@ -41,7 +41,6 @@ object Mode {
   case object DataSource extends Mode
   case object Resource extends Mode
 }
-
 
 def attrTypeFunRec(
     schema: Json,
@@ -755,54 +754,45 @@ def leafTypeTranslation(tpe: SchemaDefinition): Option[TypeIdent] =
 
 @main
 def integration(args: String*) =
-  val platform = "piano"
-  val group = args.headOption.getOrElse("publisher")
-  val name = args.drop(1).headOption.getOrElse("Term").capitalize
-  val mode = args.drop(2).headOption match
-    case Some("datasource") => Mode.DataSource
-    case Some("resource")   => Mode.Resource
-    case Some(_) | None     => Mode.DataSource
-  val modelName = modelNameConvention(name, mode = mode)
-  val location = s"sdk/$platform/spec/json/$group.json"
-  val data = Files.readString(Path.of(location))
-  val schema = parser.parse(data).right.get
-  val definitions = modelGen(schema, name, mode)
-  val schemaDecl = schemaGen(schema, name, mode).render(0)
+  CodegenCommands.gen.parse(args) match
+    case Left(value) =>
+      println(value)
+      sys.exit(1)
+    case Right((location, name, namespace, mode)) =>
+      val modelName = modelNameConvention(name, mode = mode)
+      val data = Files.readString(location)
+      val schema = parser.parse(data).right.get
+      val definitions = modelGen(schema, name, mode)
+      val schemaDecl = schemaGen(schema, name, mode)
+      println(miscGen(name, mode).map(_.render(0)).mkString("\n"))
+      // nested type adaptor
+      println(
+        attrTypeFunRec(
+          schema,
+          name,
+          resolve(schema, Reference.fromName(name)),
+          (Map.empty, Map.empty)
+        )._2.map(_._2.render(0)).mkString("\n")
+      )
+      // types
+      println(definitions.map(_.render(0)).mkString("\n"))
+      // schema function
+      println(schemaDecl.render(0))
 
-  // prelude
-  println(miscGen(name, mode).map(_.render(0)).mkString("\n"))
-
-  // datasource, resource
-  // nested type adaptor
-  println(
-    attrTypeFunRec(
-      schema,
-      name,
-      resolve(schema, Reference.fromName(name)),
-      (Map.empty, Map.empty)
-    )._2.map(_._2.render(0)).mkString("\n")
-  )
-  // types
-  println(definitions.map(_.render(0)).mkString("\n"))
-  // schema function
-  println(schemaDecl)
-
-  // CRUD operation
-  val (decl, stmts, functions) = mappingsGen(
-    schema,
-    name,
-    mode,
-    schemaTypeNamespace = List(platform + "_" + group)
-  )
-  println(functions.map(_.render(0)).mkString("\n"))
-  println(genRead(mode, name, decl, stmts).render(0))
-  println(
-    genMutationBoilerplates(mode, name, decl, stmts)
-      .map(_.render(0))
-      .mkString("\n")
-  )
-
-  // nested type adaptors
+      // CRUD operation
+      val (decl, stmts, functions) = mappingsGen(
+        schema,
+        name,
+        mode,
+        schemaTypeNamespace = List(namespace)
+      )
+      println(functions.map(_.render(0)).mkString("\n"))
+      println(genRead(mode, name, decl, stmts).render(0))
+      println(
+        genMutationBoilerplates(mode, name, decl, stmts)
+          .map(_.render(0))
+          .mkString("\n")
+      )
 
 def modelGen(schema: Json, name: String, mode: Mode): List[Term.StructDecl] =
   val modelName = modelNameConvention(name, mode = mode)

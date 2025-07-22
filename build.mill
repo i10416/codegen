@@ -10,22 +10,40 @@ val circe = Seq(
   ivy"io.circe::circe-parser::0.14.13",
   ivy"io.circe::circe-optics::0.15.0"
 )
+val decline = Seq(
+  ivy"com.monovore::decline::2.5.0"
+)
 
 object modules extends Module {
 
   object codegen extends ScalaModule {
     def scalaVersion = V.scalaVersion
-    def ivyDeps = super.ivyDeps() ++ circe
+    def ivyDeps = super.ivyDeps() ++ circe ++ decline
     override def moduleDeps: Seq[JavaModule] = Seq(pseudogo, jsonschema)
+    object test extends ScalaTests with TestModule.Munit {
+      def ivyDeps = Agg(
+        ivy"org.scalameta::munit::1.0.4"
+      )
+    }
   }
 
   object jsonschema extends ScalaModule {
+    object test extends ScalaTests with TestModule.Munit {
+      def ivyDeps = Agg(
+        ivy"org.scalameta::munit::1.0.4"
+      )
+    }
     def scalaVersion = V.scalaVersion
     def ivyDeps = super.ivyDeps() ++ circe ++ Seq(
       ivy"org.typelevel::cats-core::2.13.0"
     )
   }
   object pseudogo extends ScalaModule {
+    object test extends ScalaTests with TestModule.Munit {
+      def ivyDeps = Agg(
+        ivy"org.scalameta::munit::1.0.4"
+      )
+    }
     def scalaVersion = V.scalaVersion
   }
 }

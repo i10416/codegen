@@ -116,10 +116,10 @@ object Term {
         }
         .mkString(", ")
       val maybeRecv = recv match
-        case Some((Some(recv), tpe)) => s" ($recv ${tpe.render})"
-        case Some((None, tpe))       => s" (${tpe.render})"
+        case Some((Some(recv), tpe)) => s" ($recv ${tpe.render(level)})"
+        case Some((None, tpe))       => s" (${tpe.render(level)})"
         case None                    => ""
-      val retPart = ret.map(_.render).mkString(", ")
+      val retPart = ret.map(_.render(level)).mkString(", ")
       s"func$maybeRecv $name($argsPart) $retPart" + body.render(level)
   }
   object FnDecl {
