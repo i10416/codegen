@@ -19,6 +19,12 @@ class CodegenSuite extends munit.FunSuite {
     |          "message": {
     |            "type": "string",
     |            "nullable": true
+    |          },
+    |          "details": {
+    |            "type": "array",
+    |            "items": {
+    |              "type": "string"
+    |            }
     |          }
     |        }
     |      }
@@ -48,12 +54,16 @@ class CodegenSuite extends munit.FunSuite {
       |    AttrTypes: map[string]attr.Type{
       |      "code": types.Int32Type,
       |      "message": types.StringType,
+      |      "details": types.ListType{
+      |        ElemType: types.StringType,
+      |      },
       |    },
       |  }
       |}
       |type SampleDataSourceModel struct {
       |  Code types.Int32 `tfsdk:"code"`
       |  Message types.String `tfsdk:"message"`
+      |  Details []types.String `tfsdk:"details"`
       |}
       |func (*SampleDataSource) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
       |  resp.Schema = schema.Schema{
@@ -64,6 +74,10 @@ class CodegenSuite extends munit.FunSuite {
       |      "message": schema.StringAttribute{
       |        Optional: true,
       |      },
+      |      "details": schema.ListAttribute{
+      |        Optional: true,
+      |        ElementType: basetypes.StringType{},
+      |      },
       |    },
       |  }
       |}
@@ -72,6 +86,13 @@ class CodegenSuite extends munit.FunSuite {
       |  resp.Diagnostics.Append(req.Config.Get(ctx, &state)...)
       |  if resp.Diagnostics.HasError() {
       |    return
+      |  }
+      |  if data.Details != nil {
+      |    detailsElements := []types.String{}
+      |    for _, element := range(*data.Details) {
+      |      detailsElements = append(detailsElements, types.StringValue(element))
+      |    }
+      |    state.Details = detailsElements
       |  }
       |  state.Message = types.StringPointerValue(data.Message)
       |  state.Code = types.Int32Value(int32(data.Code))
