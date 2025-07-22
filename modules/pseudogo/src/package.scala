@@ -9,9 +9,9 @@ sealed trait Term {
 }
 sealed trait Type extends Term {
   def render(level: Int): String = this match
-    case tpe: TypeIdent       => tpe.fullName
-    case Ptr(tpe)   => s"*${tpe.fullName}"
-    case Slice(tpe) => s"[]${tpe.fullName}"
+    case tpe: TypeIdent => tpe.fullName
+    case Ptr(tpe)       => s"*${tpe.fullName}"
+    case Slice(tpe)     => s"[]${tpe.fullName}"
 }
 
 final case class TypeIdent(namespace: List[String], shortName: String)
@@ -104,7 +104,7 @@ object Term {
   }
   case class FnDecl(
       recv: Option[(Option[String], Type)],
-      name: String,
+      name: Ident,
       args: List[(String, Type)],
       ret: List[Type],
       body: Block
@@ -120,11 +120,13 @@ object Term {
         case Some((None, tpe))       => s" (${tpe.render(level)})"
         case None                    => ""
       val retPart = ret.map(_.render(level)).mkString(", ")
-      s"func$maybeRecv $name($argsPart) $retPart" + body.render(level)
+      s"func$maybeRecv ${name.render(level)}($argsPart) $retPart" + body.render(
+        level
+      )
   }
   object FnDecl {
     def apply(
-        name: String,
+        name: Ident,
         args: List[(String, Type)],
         ret: List[Type] = Nil
     )(body: Stmt*): FnDecl =

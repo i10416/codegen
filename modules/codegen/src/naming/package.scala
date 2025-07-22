@@ -6,6 +6,7 @@ import io.circe.Json
 import jsonschema.SchemaDefinition
 import jsonschema.SchemaDefinition.*
 import pseudogo.TypeIdent
+import pseudogo.Term.Ident
 
 def modelNameConvention(
     schemaName: String,
@@ -41,5 +42,5 @@ def schemaNamingConvention(schema: Json, value: SchemaDefinition): String =
     case obj: ObjectType if obj.nested        => "SingleNestedAttribute"
     case _: ObjectType | _: AnyStructuralType => "ObjectAttribute"
 
-def attrTypeFuncNameConvention(typeName: String): String =
-  s"${typeName}AttrType"
+def attrTypeFuncNameConvention(typeName: String): Ident =
+  Ident(s"${typeName}AttrType")

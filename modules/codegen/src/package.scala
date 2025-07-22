@@ -13,6 +13,7 @@ import pseudogo.Term.StructDecl
 import Mode.DataSource
 import Mode.Resource
 import Term.ValDef
+import pseudogo.Term.Ident
 
 /** @param schema
   *   OpenAPI v3 definition
@@ -63,8 +64,8 @@ def attrTypeFunRec(
     schema: Json,
     typeName: String,
     focus: ObjectType,
-    ctx: (Map[String, String], Map[String, Term.FnDecl])
-): (Map[String, String], Map[String, Term.FnDecl]) =
+    ctx: (Map[String, Ident], Map[Ident, Term.FnDecl])
+): (Map[String, Ident], Map[Ident, Term.FnDecl]) =
   val fName = attrTypeFuncNameConvention(typeName)
   val ctx_ = (ctx._1.updated(typeName, fName), ctx._2)
   val ((functionTable, functionRef), mapEntries) =
@@ -84,7 +85,7 @@ def attrTypeFunRec(
               case Some(fn) =>
                 (
                   (fTable, fRef),
-                  fields :+ camelToSnake(name) -> Term.Select(fn)()
+                  fields :+ camelToSnake(name) -> fn.selected()
                 )
               case None =>
                 val fn = attrTypeFuncNameConvention(ref.derefName)
@@ -96,7 +97,7 @@ def attrTypeFunRec(
                 )
                 (
                   (tbl, newFRef),
-                  fields :+ camelToSnake(name) -> Term.Select(fn)()
+                  fields :+ camelToSnake(name) -> fn.selected()
                 )
           case ArrayDefinition(_, ref: Reference, _) =>
             fTable.get(ref.derefName) match
@@ -107,7 +108,7 @@ def attrTypeFunRec(
                     camelToSnake(name) ->
                     Term.Init(
                       TypeIdent("types", "ListType"),
-                      Term.Attrs("ElemType" -> Term.Select(fn)())
+                      Term.Attrs("ElemType" -> fn.selected())
                     )
                 )
               case None =>
@@ -123,7 +124,7 @@ def attrTypeFunRec(
                   fields :+
                     camelToSnake(name) -> Term.Init(
                       TypeIdent("types", "ListType"),
-                      Term.Attrs("ElemType" -> Term.Select(fn)())
+                      Term.Attrs("ElemType" -> fn.selected())
                     )
                 )
           case ArrayDefinition(_, items, _) if items.isLeaf =>
@@ -336,7 +337,7 @@ def genMutationBoilerplates(
         for (action <- List("Create", "Update"))
           yield Term.FnDecl(
             Some((Some("r"), Ptr(implType))),
-            action,
+            i(action),
             List(
               ("ctx", TypeIdent("context", "Context")),
               ("req", TypeIdent(mode.namespace, action + "Request")),
@@ -352,7 +353,7 @@ def genMutationBoilerplates(
           )
       val del = Term.FnDecl(
         Some((Some("r"), Ptr(implType))),
-        "Delete",
+        i("Delete"),
         List(
           ("ctx", TypeIdent("context", "Context")),
           ("req", TypeIdent(mode.namespace, "Delete" + "Request")),
@@ -368,7 +369,7 @@ def genMutationBoilerplates(
       ) :: Nil
       val imports = Term.FnDecl(
         Some((Some("r"), Ptr(implType))),
-        "ImportState",
+        i("ImportState"),
         List(
           ("ctx", TypeIdent("context", "Context")),
           ("req", TypeIdent(mode.namespace, "ImportState" + "Request")),
@@ -412,7 +413,7 @@ def genRead(
     )
   Term.FnDecl(
     Some((Some("r"), Ptr(implType))),
-    "Read",
+    i("Read"),
     List(
       ("ctx", TypeIdent("context", "Context")),
       ("req", mode.readRequest),
@@ -603,7 +604,7 @@ def generateModelMappingRec(
               )
               val ret = Term.ValDef(i("ret"), Term.Init(modelType))
               val objectMappingFunc_ = Term.FnDecl(
-                fname,
+                i(fname),
                 ("data", schemaType) :: Nil,
                 List(modelType)
               )(
@@ -680,7 +681,7 @@ def generateModelMappingRec(
               )
               val ret = Term.ValDef(i("ret"), Term.Init(modelType))
               val objectMappingFunc_ = Term.FnDecl(
-                fname,
+                i(fname),
                 ("data", schemaType) :: Nil,
                 List(modelType)
               )(
@@ -780,13 +781,13 @@ def miscGen(name: String, implType: TypeIdent, mode: Mode): List[Term.FnDecl] =
   //   return &{implName}{}
   // }
   val constr =
-    Term.FnDecl(s"New${implType.shortName}", Nil, List(mode.implementee))(
+    Term.FnDecl(i(s"New${implType.shortName}"), Nil, List(mode.implementee))(
       Term.Ret(Term.Init(implType).asRef)
     )
   val ctx = TypeIdent("context", "Context")
   val configure = Term.FnDecl(
     Some((Some("r"), Ptr(implType))),
-    "Configure",
+    i("Configure"),
     List(
       ("ctx", ctx),
       ("req", mode.configureRequest),
@@ -801,7 +802,7 @@ def miscGen(name: String, implType: TypeIdent, mode: Mode): List[Term.FnDecl] =
 
   val met = Term.FnDecl(
     Some((Some("r"), Ptr(implType))),
-    "Metadata",
+    i("Metadata"),
     List(
       ("ctx", ctx),
       ("req", mode.metadataRequest),
@@ -823,7 +824,7 @@ def schemaGen(
 ): Term.FnDecl =
   val schemaFunc = Term.FnDecl(
     Some((None, Ptr(implType))),
-    "Schema",
+    i("Schema"),
     List(
       ("ctx", TypeIdent("context", "Context")),
       ("req", mode.schemaRequest),
