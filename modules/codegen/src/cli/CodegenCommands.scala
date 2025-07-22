@@ -14,7 +14,7 @@ object CodegenCommands:
       case "datasource" => Mode.DataSource.validNel
       case mode =>
         s"Unexpected $mode. Expected either resource or datasource.".invalidNel
-    .withDefault(Mode.Resource)
+    .withDefault(Mode.DataSource)
   val namespace = Opts.option[String]("namespace", "module namespace", "ns")
   val dest = Opts.option[Path]("dest", "destination path", "d")
   val gen = Command(

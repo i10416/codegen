@@ -1,11 +1,11 @@
 package codegen.naming
 
-import pseudogo.TypeIdent
 import codegen.Mode
 import codegen.text.snake2UpperCamel
 import io.circe.Json
 import jsonschema.SchemaDefinition
 import jsonschema.SchemaDefinition.*
+import pseudogo.TypeIdent
 
 def modelNameConvention(
     schemaName: String,

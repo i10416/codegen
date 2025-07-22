@@ -8,39 +8,56 @@ import jsonschema.SchemaDefinition
 import jsonschema.SchemaDefinition.*
 import jsonschema.resolve
 import pseudogo.*
-
-import java.nio.file.Files
-import java.nio.file.Path
+import pseudogo.Term.StructDecl
 
 import Mode.DataSource
 import Mode.Resource
 import Term.ValDef
 
-sealed trait Mode {
-  def modelNameSuffix: String = this match
-    case Mode.DataSource => "DataSourceModel"
-    case Mode.Resource   => "ResourceModel"
+/** @param schema
+  *   OpenAPI v3 definition
+  * @param name
+  *   resource name
+  * @param namespace
+  *   network type namespace
+  * @param mode
+  *   either resource or datasource
+  */
+def run(schema: Json, name: String, namespace: String, mode: Mode): GenOutput =
+  val implName = mode match
+    case DataSource => name + "DataSource"
+    case Resource   => name + "Resource"
+  val implType = TypeIdent(Nil, implName)
+  val modelName = modelNameConvention(name, mode = mode)
+  val modelDefinition = resolve(schema, Reference.fromName(name))
+  val definitions = modelGen(schema, modelName, modelDefinition, mode)
+  val schemaDecl = schemaGen(schema, modelDefinition, implType, mode)
+  val (decl, stmts, functions) = mappingsGen(
+    schema,
+    name,
+    mode,
+    networkTypeNamespace = List(namespace)
+  )
 
-  def namespace: String = this match
-    case DataSource => "datasource"
-    case Resource   => "resource"
-  def implementee = this match
-    case DataSource => TypeIdent(namespace, "DataSource")
-    case Resource   => TypeIdent(namespace, "Resource")
-  def metadataRequest = TypeIdent(namespace, "MetadataRequest")
-  def metadataResponse = TypeIdent(namespace, "MetadataResponse")
-  def configureRequest = TypeIdent(namespace, "ConfigureRequest")
-  def configureResponse = TypeIdent(namespace, "ConfigureResponse")
-  def schemaRequest = TypeIdent(namespace, "SchemaRequest")
-  def schemaResponse = TypeIdent(namespace, "SchemaResponse")
-  def readRequest = TypeIdent(namespace, "ReadRequest")
-  def readResponse = TypeIdent(namespace, "ReadResponse")
-
-}
-object Mode {
-  case object DataSource extends Mode
-  case object Resource extends Mode
-}
+  GenOutput(
+    StructDecl(implType, Nil),
+    schemaDecl,
+    definitions,
+    miscGen(name, implType, mode),
+    attrTypeFunRec(
+      schema,
+      name,
+      modelDefinition,
+      (Map.empty, Map.empty)
+    )._2.map(_._2).toList,
+    (decl, stmts, functions),
+    genRead(mode, implType, decl, stmts) :: genMutationBoilerplates(
+      mode,
+      implType,
+      decl,
+      stmts
+    )
+  )
 
 def attrTypeFunRec(
     schema: Json,
@@ -159,8 +176,7 @@ private def renderAttributes(
     schema: Json,
     schemaDefn: ObjectType,
     level: Int,
-    path: List[String],
-    mode: Mode
+    path: List[String]
 ): List[(String, Expr)] =
   val attributes = schemaDefn.properties.map { case (key, value) =>
     val tfsdkName = camelToSnake(key)
@@ -170,10 +186,11 @@ private def renderAttributes(
         schemaTypeFromSchema(schema, value),
         Term.Attrs(
           List(
-            Option.when(!schemaDefn.strictPresence(key))(
-              ("Optional", Term.LitBool(true))
-            ),
-            Some(("Computed", Term.LitBool(true))),
+            Option
+              .when(!schemaDefn.strictPresence(key))(
+                ("Optional", Term.LitBool(true))
+              )
+              .orElse(Option(("Required", Term.LitBool(true)))),
             value.description
               .map(_.linesIterator.mkString(" ").trim())
               .map(d =>
@@ -227,8 +244,7 @@ private def renderAttributes(
                             None
                           ),
                           level + 2,
-                          path,
-                          mode
+                          path
                         ).map((k, v) => (q(k), v))
                       )*
                     )
@@ -239,8 +255,7 @@ private def renderAttributes(
                           schema,
                           resolve(schema, ref),
                           level + 2,
-                          path,
-                          mode
+                          path
                         ).map((k, v) => (q(k), v))
                       )*
                     )
@@ -264,16 +279,14 @@ private def renderAttributes(
                                   schema,
                                   obj,
                                   level + 3,
-                                  path,
-                                  mode
+                                  path
                                 )
                               case ref: Reference =>
                                 renderAttributes(
                                   schema,
                                   resolve(schema, ref),
                                   level + 3,
-                                  ref.derefName :: path,
-                                  mode
+                                  ref.derefName :: path
                                 )
                             ).map((k, v) => (q(k), v)))*
                           )
@@ -295,17 +308,13 @@ private def renderAttributes(
 
 def genMutationBoilerplates(
     mode: Mode,
-    name: String,
+    implType: TypeIdent,
     stateDecl: String,
     mappings: List[Stmt]
 ): List[Term.FnDecl] =
   mode match
     case DataSource => Nil
     case Resource => {
-      val implName = mode match
-        case DataSource => name + "DataSource"
-        case Resource   => name + "Resource"
-      val implType = TypeIdent(Nil, implName)
       val selectData = i("req") \\ "State" \\ "Get"
       val readDataToModel =
         (i("resp") \\ "Diagnostics" \\ "Append")(
@@ -376,14 +385,11 @@ def genMutationBoilerplates(
 
 def genRead(
     mode: Mode,
-    name: String,
+    implType: TypeIdent,
     stateDecl: String,
     mappings: List[Stmt]
 ): Term.FnDecl =
-  val implName = mode match
-    case DataSource => name + "DataSource"
-    case Resource   => name + "Resource"
-  val implType = TypeIdent(Nil, implName)
+
   val selectData = mode match
     case DataSource => i("req") \\ "Config" \\ "Get"
     case Resource   => i("req") \\ "State" \\ "Get"
@@ -752,51 +758,12 @@ def leafTypeTranslation(tpe: SchemaDefinition): Option[TypeIdent] =
     case _: (ObjectType | AnyStructuralType | Reference | ArrayDefinition) =>
       None
 
-@main
-def integration(args: String*) =
-  CodegenCommands.gen.parse(args) match
-    case Left(value) =>
-      println(value)
-      sys.exit(1)
-    case Right((location, name, namespace, mode)) =>
-      val modelName = modelNameConvention(name, mode = mode)
-      val data = Files.readString(location)
-      val schema = parser.parse(data).right.get
-      val definitions = modelGen(schema, name, mode)
-      val schemaDecl = schemaGen(schema, name, mode)
-      println(miscGen(name, mode).map(_.render(0)).mkString("\n"))
-      // nested type adaptor
-      println(
-        attrTypeFunRec(
-          schema,
-          name,
-          resolve(schema, Reference.fromName(name)),
-          (Map.empty, Map.empty)
-        )._2.map(_._2.render(0)).mkString("\n")
-      )
-      // types
-      println(definitions.map(_.render(0)).mkString("\n"))
-      // schema function
-      println(schemaDecl.render(0))
-
-      // CRUD operation
-      val (decl, stmts, functions) = mappingsGen(
-        schema,
-        name,
-        mode,
-        schemaTypeNamespace = List(namespace)
-      )
-      println(functions.map(_.render(0)).mkString("\n"))
-      println(genRead(mode, name, decl, stmts).render(0))
-      println(
-        genMutationBoilerplates(mode, name, decl, stmts)
-          .map(_.render(0))
-          .mkString("\n")
-      )
-
-def modelGen(schema: Json, name: String, mode: Mode): List[Term.StructDecl] =
-  val modelName = modelNameConvention(name, mode = mode)
-  val modelDefinition = resolve(schema, Reference.fromName(name))
+def modelGen(
+    schema: Json,
+    modelName: TypeIdent,
+    modelDefinition: ObjectType,
+    mode: Mode
+): List[Term.StructDecl] =
   val models = generateModelsRec(
     schema,
     modelName,
@@ -805,22 +772,17 @@ def modelGen(schema: Json, name: String, mode: Mode): List[Term.StructDecl] =
     modelName :: Nil,
     mode = mode
   )
-  models.map { case (name, fields) =>
-    Term.StructDecl(name, fields)
-  }.toList
+  models.map(Term.StructDecl(_, _)).toList
 
-def miscGen(name: String, mode: Mode): List[Term.FnDecl] =
-  val implName = mode match
-    case DataSource => name + "DataSource"
-    case Resource   => name + "Resource"
-  val implType = TypeIdent(Nil, implName)
+def miscGen(name: String, implType: TypeIdent, mode: Mode): List[Term.FnDecl] =
 
-  val providerTypeName = camelToSnake(name)
-
-  val ret = mode.implementee
-  val constr = Term.FnDecl(s"New$implName", Nil, List(ret))(
-    Term.Ret(Term.Init(implType).asRef)
-  )
+  // func New{implName} ... {
+  //   return &{implName}{}
+  // }
+  val constr =
+    Term.FnDecl(s"New${implType.shortName}", Nil, List(mode.implementee))(
+      Term.Ret(Term.Init(implType).asRef)
+    )
   val ctx = TypeIdent("context", "Context")
   val configure = Term.FnDecl(
     Some((Some("r"), Ptr(implType))),
@@ -835,6 +797,8 @@ def miscGen(name: String, mode: Mode): List[Term.FnDecl] =
       Term.If(Term.Eval("req.ProviderData == nil"))(Term.Ret())
     )
   )
+  val providerTypeName = camelToSnake(name)
+
   val met = Term.FnDecl(
     Some((Some("r"), Ptr(implType))),
     "Metadata",
@@ -851,13 +815,12 @@ def miscGen(name: String, mode: Mode): List[Term.FnDecl] =
   )
   List(constr, configure, met)
 
-def schemaGen(schema: Json, name: String, mode: Mode): Term.FnDecl =
-  val modelDefinition = resolve(schema, Reference.fromName(name))
-  val implName = mode match
-    case DataSource => s"${name}DataSource"
-    case Resource   => s"${name}Resource"
-
-  val implType = TypeIdent(Nil, implName)
+def schemaGen(
+    schema: Json,
+    modelDefinition: ObjectType,
+    implType: TypeIdent,
+    mode: Mode
+): Term.FnDecl =
   val schemaFunc = Term.FnDecl(
     Some((None, Ptr(implType))),
     "Schema",
@@ -882,8 +845,7 @@ def schemaGen(schema: Json, name: String, mode: Mode): Term.FnDecl =
                       schema,
                       modelDefinition,
                       3,
-                      name :: Nil,
-                      mode
+                      implType.shortName :: Nil
                     ).map((k, v) => (q(k), v))
                   )*
                 )
@@ -894,12 +856,15 @@ def schemaGen(schema: Json, name: String, mode: Mode): Term.FnDecl =
   )
   schemaFunc
 
+// `mappingsGen` generates the mappings from network types to terraform sdk compatible types.
+// The mappings contain simple assignment statements and mapping functions for nested types such as array field.
+// It assumes that all the network types belong to go namespace `schemaTypeNamespace`.
 def mappingsGen(
     schema: Json,
     name: String,
     mode: Mode,
     modelIdent: String = "state",
-    schemaTypeNamespace: List[String]
+    networkTypeNamespace: List[String]
 ): (String, List[Stmt], Seq[Term.FnDecl]) =
 
   val modelDefinition = resolve(schema, Reference.fromName(name))
@@ -911,6 +876,6 @@ def mappingsGen(
     modelDefinition,
     (Nil, Map.empty, Map.empty),
     mode,
-    schemaTypeNamespace
+    networkTypeNamespace
   )
   (decl, stmts, functions.values.toSeq)

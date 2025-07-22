@@ -108,7 +108,7 @@ object Term {
       args: List[(String, Type)],
       ret: List[Type],
       body: Block
-  ) {
+  ) extends Term {
     def render(level: Int = 0): String =
       val argsPart = args
         .map { case (ident, tpe) =>
